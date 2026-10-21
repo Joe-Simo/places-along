@@ -15,6 +15,8 @@ Built for the [Geoapify Open Geospatial Program](https://www.geoapify.com/open-g
 
 ## Status
 
+Demo: **[places-along.vercel.app](https://places-along.vercel.app)** (sample mode until the Geoapify key is set).
+
 | | |
 | --- | --- |
 | Sample mode (no keys) | Working, tested |
