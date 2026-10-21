@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "1.0.0",
+  "title": "Geoapify MCP tool OpenAPI index",
+  "description": "Machine-readable index of focused OpenAPI specifications. Load only the tool specifications needed for an AI workflow to reduce schema context.",
+  "protocolSpec": "../mcp-api-openapi-specs.json",
+  "authentication": {
+    "type": "apiKey",
+    "in": "header",
+    "name": "x-api-key"
+  },
+  "tools": [
+    {
+      "name": "geocode_address",
+      "title": "Geocoding: Geocode Address",
+      "category": "Geocoding",
+      "description": "Use this tool when the input is one free-text address, landmark, city, or place query and coordinates are needed. Use geocode_structured_address when address components are already separated, or reverse_geocode_coordinates when the input is coordinates.",
+      "operationId": "callGeocodeAddress",
+      "openApiSpec": "./geocode-address-openapi-spec.json"
+    },
+    {
+      "name": "geocode_structured_address",
+      "title": "Geocoding: Geocode Structured Address",
+      "category": "Geocoding",
+      "description": "Use this tool when address components such as street, city, postcode, and country are already separated. Use geocode_address for one free-text query; when housenumber is supplied, include street.",
+      "operationId": "callGeocodeStructuredAddress",
+      "openApiSpec": "./geocode-structured-address-openapi-spec.json"
+    },
+    {
+      "name": "reverse_geocode_coordinates",
+      "title": "Geocoding: Reverse Geocode Coordinates",
+      "category": "Geocoding",
+      "description": "Use this tool when latitude and longitude are known and a nearby address or place is needed. Use geocode_address or geocode_structured_address when the input is address text.",
+      "operationId": "callReverseGeocodeCoordinates",
+      "openApiSpec": "./reverse-geocode-coordinates-openapi-spec.json"
+    },
+    {
+      "name": "search_places",
+      "title": "Places: Search Places",
+      "category": "Places",
+      "description": "Use this tool to find places of one exact supported category around known coordinates. Call list_place_categories first when the category is unknown, and geocode an address first when the search center is not yet coordinates.",
+      "operationId": "callSearchPlaces",
+      "openApiSpec": "./search-places-openapi-spec.json"
+    },
+    {
+      "name": "list_place_categories",
+      "title": "Places: List Place Categories",
+      "category": "Places",
+      "description": "Use this zero-credit tool to discover the exact category value required by search_places. It accepts no arguments and returns category names only; use search_places afterward to find actual places.",
+      "operationId": "callListPlaceCategories",
+      "openApiSpec": "./list-place-categories-openapi-spec.json"
+    },
+    {
+      "name": "calculate_route",
+      "title": "Routing: Calculate Route",
+      "category": "Routing",
+      "description": "Use this tool for one ordered route with total and per-leg travel cost plus optional geometry or turn instructions. Use calculate_route_matrix instead to compare travel times and distances across many source-target pairs.",
+      "operationId": "callCalculateRoute",
+      "openApiSpec": "./calculate-route-openapi-spec.json"
+    },
+    {
+      "name": "calculate_route_matrix",
+      "title": "Routing: Calculate Route Matrix",
+      "category": "Routing",
+      "description": "Use this tool to compare pairwise travel times and distances between multiple sources and targets. It does not return route geometry or instructions; use calculate_route for one detailed ordered route.",
+      "operationId": "callCalculateRouteMatrix",
+      "openApiSpec": "./calculate-route-matrix-openapi-spec.json"
+    },
+    {
+      "name": "combine_geometries",
+      "title": "Utilities: Combine Geometries",
+      "category": "Utilities",
+      "description": "Use this tool to create a new geometry by intersecting, subtracting, unioning, or enveloping GeoJSON inputs. Use evaluate_spatial_relation for a boolean relationship, measure_geometry for numeric measurements, or transform_geometry to modify one geometry.",
+      "operationId": "callCombineGeometries",
+      "openApiSpec": "./combine-geometries-openapi-spec.json"
+    },
+    {
+      "name": "evaluate_spatial_relation",
+      "title": "Utilities: Evaluate Spatial Relation",
+      "category": "Utilities",
+      "description": "Use this tool when the answer should be true or false: containment, crossing, disjointness, intersection, validity, inclusion, or whether a point lies on a line. It does not modify geometries or calculate distances.",
+      "operationId": "callEvaluateSpatialRelation",
+      "openApiSpec": "./evaluate-spatial-relation-openapi-spec.json"
+    },
+    {
+      "name": "measure_geometry",
+      "title": "Utilities: Measure Geometry",
+      "category": "Utilities",
+      "description": "Use this tool for numeric area, length, or distance calculations and for bounding-box, along-line, or nearest-point results. Use evaluate_spatial_relation for true/false predicates and transform_geometry to modify a geometry.",
+      "operationId": "callMeasureGeometry",
+      "openApiSpec": "./measure-geometry-openapi-spec.json"
+    },
+    {
+      "name": "transform_geometry",
+      "title": "Utilities: Transform Geometry",
+      "category": "Utilities",
+      "description": "Use this tool to create a modified geometry by buffering, simplifying, rotating, scaling, or translating, or to calculate a center point. Use measure_geometry for numeric measurements and evaluate_spatial_relation for true/false predicates.",
+      "operationId": "callTransformGeometry",
+      "openApiSpec": "./transform-geometry-openapi-spec.json"
+    }
+  ]
+}

@@ -1,0 +1,909 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Geoapify MCP Tool: Routing: Calculate Route Matrix",
+    "version": "1.1.2",
+    "description": "AI-focused, tool-specific OpenAPI specification for calculate_route_matrix over the Geoapify JSON-RPC transport. Import this specification when an integration needs this tool without the full MCP catalog.",
+    "contact": {
+      "name": "Geoapify",
+      "url": "https://geoapify.com",
+      "email": "info@geoapify.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.geoapify.com/v1",
+      "description": "Default API endpoint."
+    },
+    {
+      "url": "https://api-eu.geoapify.com/v1",
+      "description": "EU-focused endpoint. Geoapify service processing uses EU infrastructure."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Routing",
+      "description": "Routing MCP tools."
+    }
+  ],
+  "paths": {
+    "/mcp": {
+      "post": {
+        "tags": [
+          "Routing"
+        ],
+        "operationId": "callCalculateRouteMatrix",
+        "summary": "Routing: Calculate Route Matrix",
+        "description": "Use this tool to compare pairwise travel times and distances between multiple sources and targets. It does not return route geometry or instructions; use calculate_route for one detailed ordered route.",
+        "parameters": [
+          {
+            "name": "MCP-Protocol-Version",
+            "in": "header",
+            "required": false,
+            "description": "Optional protocol version. Defaults to 2025-06-18 when omitted; explicitly unsupported versions are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2025-06-18"
+              ]
+            },
+            "example": "2025-06-18"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalculateRouteMatrixToolCallRequest"
+              },
+              "examples": {
+                "calculateRouteMatrixSymmetric": {
+                  "summary": "Calculate a symmetric route matrix",
+                  "description": "Calculate travel times and distances between source and target locations.",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "calculate_route_matrix",
+                      "arguments": {
+                        "sources": [
+                          {
+                            "lat": 52.52,
+                            "lon": 13.405
+                          },
+                          {
+                            "lat": 52.51,
+                            "lon": 13.39
+                          }
+                        ],
+                        "mode": "drive"
+                      }
+                    }
+                  }
+                },
+                "calculateRouteMatrixSourcesToTargets": {
+                  "summary": "Calculate a source-to-target driving matrix",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 2,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "calculate_route_matrix",
+                      "arguments": {
+                        "sources": [
+                          {
+                            "lat": 52.52,
+                            "lon": 13.405
+                          },
+                          {
+                            "lat": 52.5096,
+                            "lon": 13.376
+                          }
+                        ],
+                        "targets": [
+                          {
+                            "lat": 52.5163,
+                            "lon": 13.3777
+                          },
+                          {
+                            "lat": 52.4986,
+                            "lon": 13.3762
+                          }
+                        ],
+                        "mode": "drive",
+                        "traffic": "approximated",
+                        "avoid": [
+                          "tolls"
+                        ],
+                        "units": "metric"
+                      }
+                    }
+                  }
+                },
+                "calculateRouteMatrixWalk": {
+                  "summary": "Calculate a walking matrix",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 3,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "calculate_route_matrix",
+                      "arguments": {
+                        "sources": [
+                          {
+                            "lat": 48.8566,
+                            "lon": 2.3522
+                          }
+                        ],
+                        "targets": [
+                          {
+                            "lat": 48.8606,
+                            "lon": 2.3376
+                          },
+                          {
+                            "lat": 48.8584,
+                            "lon": 2.2945
+                          }
+                        ],
+                        "mode": "walk",
+                        "type": "short",
+                        "units": "metric"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC response for the calculate_route_matrix MCP tool. Tool execution and validation failures also use HTTP 200 with result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalculateRouteMatrixToolCallResponse"
+                },
+                "examples": {
+                  "calculateRouteMatrixSuccess": {
+                    "summary": "Route matrix result",
+                    "description": "Live response for the calculateRouteMatrixSymmetric request example.",
+                    "value": {
+                      "jsonrpc": "2.0",
+                      "id": 1,
+                      "result": {
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "{\n  \"sources\": [\n    {\n      \"lat\": 52.520013,\n      \"lon\": 13.404987\n    },\n    {\n      \"lat\": 52.509996,\n      \"lon\": 13.389986\n    }\n  ],\n  \"targets\": [\n    {\n      \"lat\": 52.520013,\n      \"lon\": 13.404987\n    },\n    {\n      \"lat\": 52.509996,\n      \"lon\": 13.389986\n    }\n  ],\n  \"sources_to_targets\": [\n    [\n      {\n        \"distance\": 0,\n        \"time\": 0,\n        \"source_index\": 0,\n        \"target_index\": 0\n      },\n      {\n        \"distance\": 2250,\n        \"time\": 222,\n        \"source_index\": 0,\n        \"target_index\": 1\n      }\n    ],\n    [\n      {\n        \"distance\": 1960,\n        \"time\": 154,\n        \"source_index\": 1,\n        \"target_index\": 0\n      },\n      {\n        \"distance\": 0,\n        \"time\": 0,\n        \"source_index\": 1,\n        \"target_index\": 1\n      }\n    ]\n  ],\n  \"units\": \"metric\",\n  \"distance_units\": \"meters\",\n  \"time_units\": \"seconds\"\n}"
+                          }
+                        ],
+                        "structuredContent": {
+                          "sources": [
+                            {
+                              "lat": 52.520013,
+                              "lon": 13.404987
+                            },
+                            {
+                              "lat": 52.509996,
+                              "lon": 13.389986
+                            }
+                          ],
+                          "targets": [
+                            {
+                              "lat": 52.520013,
+                              "lon": 13.404987
+                            },
+                            {
+                              "lat": 52.509996,
+                              "lon": 13.389986
+                            }
+                          ],
+                          "sources_to_targets": [
+                            [
+                              {
+                                "distance": 0,
+                                "time": 0,
+                                "source_index": 0,
+                                "target_index": 0
+                              },
+                              {
+                                "distance": 2250,
+                                "time": 222,
+                                "source_index": 0,
+                                "target_index": 1
+                              }
+                            ],
+                            [
+                              {
+                                "distance": 1960,
+                                "time": 154,
+                                "source_index": 1,
+                                "target_index": 0
+                              },
+                              {
+                                "distance": 0,
+                                "time": 0,
+                                "source_index": 1,
+                                "target_index": 1
+                              }
+                            ]
+                          ],
+                          "units": "metric",
+                          "distance_units": "meters",
+                          "time_units": "seconds"
+                        },
+                        "isError": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid HTTP request or unsupported MCP protocol version. Tool validation errors are returned with HTTP 200 and result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "error": "Bad Request",
+                  "message": "MCP-Protocol-Version header must be \"2025-06-18\""
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Geoapify API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "error": "Unauthorized",
+                  "message": "Invalid apiKey"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or quota exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "error": "Too Many Requests",
+                  "message": "Quota exceeded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal gateway error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "error": "Internal Server Error",
+                  "message": "Request failed, please try again later"
+                }
+              }
+            }
+          }
+        },
+        "x-geoapify-mcp-tool": "calculate_route_matrix",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/CalculateRouteMatrixInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/CalculateRouteMatrixOutput"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JsonRpcId": {
+        "description": "JSON-RPC request identifier. The server echoes this value in the response.",
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "JsonRpcError": {
+        "type": "object",
+        "description": "JSON-RPC error object.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "JSON-RPC error code, such as -32600 for an invalid request, -32601 for an unknown method, or -32602 for invalid parameters."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable JSON-RPC error message."
+          },
+          "data": {
+            "description": "Optional machine-readable error details."
+          }
+        }
+      },
+      "JsonRpcErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC error response returned for invalid requests or unknown methods.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "error"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "error": {
+            "$ref": "#/components/schemas/JsonRpcError"
+          }
+        }
+      },
+      "GatewayError": {
+        "type": "object",
+        "description": "HTTP gateway error returned before or outside JSON-RPC tool execution.",
+        "required": [
+          "statusCode",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code."
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP error name."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message."
+          }
+        }
+      },
+      "CalculateRouteMatrixInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sources"
+        ],
+        "properties": {
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1000,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "lat",
+                "lon"
+              ],
+              "properties": {
+                "lat": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90,
+                  "description": "Location latitude."
+                },
+                "lon": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180,
+                  "description": "Location longitude."
+                }
+              }
+            },
+            "description": "Matrix source locations. sources.length multiplied by targets.length must not exceed 1000."
+          },
+          "targets": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1000,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "lat",
+                "lon"
+              ],
+              "properties": {
+                "lat": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90,
+                  "description": "Location latitude."
+                },
+                "lon": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180,
+                  "description": "Location longitude."
+                }
+              }
+            },
+            "description": "Matrix target locations. Defaults to the source locations when omitted. sources.length multiplied by targets.length must not exceed 1000."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "drive",
+              "truck",
+              "light_truck",
+              "medium_truck",
+              "bus",
+              "motorcycle",
+              "scooter",
+              "bicycle",
+              "walk",
+              "hike"
+            ],
+            "default": "drive",
+            "description": "Travel or vehicle mode used to calculate the matrix."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "balanced",
+              "short",
+              "less_maneuvers"
+            ],
+            "default": "balanced",
+            "description": "Route optimization preference."
+          },
+          "traffic": {
+            "type": "string",
+            "enum": [
+              "free_flow",
+              "approximated"
+            ],
+            "default": "free_flow",
+            "description": "Traffic model used for motorized routing."
+          },
+          "avoid": {
+            "type": "array",
+            "maxItems": 3,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "tolls",
+                "highways",
+                "ferries"
+              ]
+            },
+            "description": "Route features to avoid. Supported values are \"tolls\", \"highways\", and \"ferries\"."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "metric",
+              "imperial"
+            ],
+            "default": "metric",
+            "description": "Distance and speed units."
+          }
+        }
+      },
+      "CalculateRouteMatrixOutput": {
+        "type": "object",
+        "description": "Resolved matrix locations and source-to-target travel costs.",
+        "required": [
+          "sources",
+          "targets",
+          "sources_to_targets",
+          "units",
+          "distance_units",
+          "time_units"
+        ],
+        "properties": {
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "A resolved location in latitude/longitude form.",
+              "required": [
+                "lat",
+                "lon"
+              ],
+              "properties": {
+                "lat": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90
+                },
+                "lon": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                }
+              }
+            },
+            "description": "Resolved source locations."
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "A resolved location in latitude/longitude form.",
+              "required": [
+                "lat",
+                "lon"
+              ],
+              "properties": {
+                "lat": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90
+                },
+                "lon": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                }
+              }
+            },
+            "description": "Resolved target locations."
+          },
+          "sources_to_targets": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "distance",
+                  "time",
+                  "source_index",
+                  "target_index"
+                ],
+                "properties": {
+                  "distance": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "time": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "source_index": {
+                    "type": "integer"
+                  },
+                  "target_index": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "description": "Rows correspond to sources and columns correspond to targets."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "metric",
+              "imperial"
+            ],
+            "description": "Requested unit system."
+          },
+          "distance_units": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "miles"
+            ],
+            "description": "Unit used by matrix distance values."
+          },
+          "time_units": {
+            "type": "string",
+            "enum": [
+              "seconds"
+            ],
+            "description": "Unit used by matrix time values."
+          }
+        }
+      },
+      "CalculateRouteMatrixToolCallParams": {
+        "type": "object",
+        "description": "MCP tools/call params for calculate_route_matrix.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "arguments"
+        ],
+        "properties": {
+          "name": {
+            "description": "Registered MCP tool name.",
+            "const": "calculate_route_matrix"
+          },
+          "arguments": {
+            "description": "Arguments validated by the calculate_route_matrix input schema.",
+            "$ref": "#/components/schemas/CalculateRouteMatrixInput"
+          }
+        }
+      },
+      "CalculateRouteMatrixToolCallRequest": {
+        "type": "object",
+        "description": "JSON-RPC tools/call request for the calculate_route_matrix MCP tool.",
+        "additionalProperties": false,
+        "required": [
+          "jsonrpc",
+          "id",
+          "method",
+          "params"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "description": "JSON-RPC protocol version.",
+            "const": "2.0"
+          },
+          "id": {
+            "description": "Client-supplied JSON-RPC request id echoed in the response.",
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "method": {
+            "description": "MCP method used to call a tool.",
+            "const": "tools/call"
+          },
+          "params": {
+            "description": "Tool call parameters for calculate_route_matrix.",
+            "$ref": "#/components/schemas/CalculateRouteMatrixToolCallParams"
+          }
+        },
+        "examples": [
+          {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/call",
+            "params": {
+              "name": "calculate_route_matrix",
+              "arguments": {
+                "sources": [
+                  {
+                    "lat": 52.52,
+                    "lon": 13.405
+                  },
+                  {
+                    "lat": 52.51,
+                    "lon": 13.39
+                  }
+                ],
+                "mode": "drive"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {
+              "name": "calculate_route_matrix",
+              "arguments": {
+                "sources": [
+                  {
+                    "lat": 52.52,
+                    "lon": 13.405
+                  },
+                  {
+                    "lat": 52.5096,
+                    "lon": 13.376
+                  }
+                ],
+                "targets": [
+                  {
+                    "lat": 52.5163,
+                    "lon": 13.3777
+                  },
+                  {
+                    "lat": 52.4986,
+                    "lon": 13.3762
+                  }
+                ],
+                "mode": "drive",
+                "traffic": "approximated",
+                "avoid": [
+                  "tolls"
+                ],
+                "units": "metric"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "tools/call",
+            "params": {
+              "name": "calculate_route_matrix",
+              "arguments": {
+                "sources": [
+                  {
+                    "lat": 48.8566,
+                    "lon": 2.3522
+                  }
+                ],
+                "targets": [
+                  {
+                    "lat": 48.8606,
+                    "lon": 2.3376
+                  },
+                  {
+                    "lat": 48.8584,
+                    "lon": 2.2945
+                  }
+                ],
+                "mode": "walk",
+                "type": "short",
+                "units": "metric"
+              }
+            }
+          }
+        ],
+        "x-geoapify-mcp-tool": "calculate_route_matrix",
+        "x-geoapify-mcp-category": "Routing",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/CalculateRouteMatrixInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/CalculateRouteMatrixOutput"
+      },
+      "CalculateRouteMatrixToolCallSuccessResponse": {
+        "type": "object",
+        "description": "Successful JSON-RPC response with tool-specific structured content.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "structuredContent",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "JSON text representation of structuredContent.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded copy of structuredContent."
+                    }
+                  }
+                }
+              },
+              "structuredContent": {
+                "$ref": "#/components/schemas/CalculateRouteMatrixOutput"
+              },
+              "isError": {
+                "const": false
+              }
+            }
+          }
+        }
+      },
+      "ToolCallErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC tools/call response when tool execution fails.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "Tool error details represented as JSON text.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded GatewayError with statusCode, error, and message fields."
+                    }
+                  }
+                }
+              },
+              "isError": {
+                "const": true
+              }
+            }
+          }
+        }
+      },
+      "CalculateRouteMatrixToolCallResponse": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CalculateRouteMatrixToolCallSuccessResponse"
+          },
+          {
+            "$ref": "#/components/schemas/ToolCallErrorResponse"
+          },
+          {
+            "$ref": "#/components/schemas/JsonRpcErrorResponse"
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyInHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Geoapify API key header. Recommended authentication method for MCP clients."
+      }
+    }
+  },
+  "x-geoapify-mcp-tool-index": "index.json",
+  "security": [
+    {
+      "ApiKeyInHeader": []
+    }
+  ]
+}

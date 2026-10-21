@@ -1,0 +1,1762 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Geoapify MCP Tool: Utilities: Transform Geometry",
+    "version": "1.1.2",
+    "description": "AI-focused, tool-specific OpenAPI specification for transform_geometry over the Geoapify JSON-RPC transport. Import this specification when an integration needs this tool without the full MCP catalog.",
+    "contact": {
+      "name": "Geoapify",
+      "url": "https://geoapify.com",
+      "email": "info@geoapify.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.geoapify.com/v1",
+      "description": "Default API endpoint."
+    },
+    {
+      "url": "https://api-eu.geoapify.com/v1",
+      "description": "EU-focused endpoint. Geoapify service processing uses EU infrastructure."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Utilities",
+      "description": "Utilities MCP tools."
+    }
+  ],
+  "paths": {
+    "/mcp": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "operationId": "callTransformGeometry",
+        "summary": "Utilities: Transform Geometry",
+        "description": "Use this tool to create a modified geometry by buffering, simplifying, rotating, scaling, or translating, or to calculate a center point. Use measure_geometry for numeric measurements and evaluate_spatial_relation for true/false predicates.\n\n## Operations\n\n### `buffer`\n\nCreate a polygon around the geometry at the requested radius.\n\n**Input**\n\n- Required: `operation` = `\"buffer\"`, `geometry`, `distance`\n- Optional: `units`, `steps`\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }` containing the buffer Polygon or MultiPolygon, or `{ \"type\": \"empty\", \"data\": null }` when no buffer geometry is produced.\n\n### `simplify`\n\nReduce geometry complexity while preserving its general shape.\n\n**Input**\n\n- Required: `operation` = `\"simplify\"`, `geometry`\n- Optional: `tolerance`, `high_quality`\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }` containing the simplified geometry.\n\n### `rotate`\n\nRotate the geometry clockwise by an angle in degrees.\n\n**Input**\n\n- Required: `operation` = `\"rotate\"`, `geometry`, `angle`\n- Optional: `pivot`\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }` containing the rotated geometry.\n\n### `scale`\n\nScale the geometry by a positive multiplier.\n\n**Input**\n\n- Required: `operation` = `\"scale\"`, `geometry`, `factor`\n- Optional: `origin`\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }` containing the scaled geometry.\n\n### `translate`\n\nMove the geometry by a distance and compass direction.\n\n**Input**\n\n- Required: `operation` = `\"translate\"`, `geometry`, `distance`, `direction`\n- Optional: `units`, `z_translation`\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }` containing the translated geometry.\n\n### `center`\n\nReturn the center of the geometry bounding box.\n\n**Input**\n\n- Required: `operation` = `\"center\"`, `geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the Point Feature at the center of the geometry bounding box.\n\n### `center_mean`\n\nReturn the arithmetic mean of all geometry vertices.\n\n**Input**\n\n- Required: `operation` = `\"center_mean\"`, `geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the Point Feature at the arithmetic mean of all vertices.\n\n### `center_median`\n\nReturn the median center that minimizes total distance to the input vertices.\n\n**Input**\n\n- Required: `operation` = `\"center_median\"`, `geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the median-center Point Feature.\n\n### `center_of_mass`\n\nReturn the centroid weighted by the geometry shape.\n\n**Input**\n\n- Required: `operation` = `\"center_of_mass\"`, `geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the center-of-mass Point Feature.",
+        "parameters": [
+          {
+            "name": "MCP-Protocol-Version",
+            "in": "header",
+            "required": false,
+            "description": "Optional protocol version. Defaults to 2025-06-18 when omitted; explicitly unsupported versions are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2025-06-18"
+              ]
+            },
+            "example": "2025-06-18"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformGeometryToolCallRequest"
+              },
+              "examples": {
+                "transformBuffer": {
+                  "summary": "Geometry: create a 500-meter point buffer",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 22,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "transform_geometry",
+                      "arguments": {
+                        "operation": "buffer",
+                        "geometry": {
+                          "type": "Point",
+                          "coordinates": [
+                            13.405,
+                            52.52
+                          ]
+                        },
+                        "distance": 500,
+                        "units": "meters",
+                        "steps": 16
+                      }
+                    }
+                  }
+                },
+                "transformSimplify": {
+                  "summary": "Geometry: simplify a line",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 23,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "transform_geometry",
+                      "arguments": {
+                        "operation": "simplify",
+                        "geometry": {
+                          "type": "LineString",
+                          "coordinates": [
+                            [
+                              13.38,
+                              52.5
+                            ],
+                            [
+                              13.41,
+                              52.53
+                            ],
+                            [
+                              13.44,
+                              52.54
+                            ]
+                          ]
+                        },
+                        "tolerance": 0.001,
+                        "high_quality": true
+                      }
+                    }
+                  }
+                },
+                "transformRotate": {
+                  "summary": "Geometry: rotate a polygon around its centroid",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 24,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "transform_geometry",
+                      "arguments": {
+                        "operation": "rotate",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        },
+                        "angle": 45
+                      }
+                    }
+                  }
+                },
+                "transformScale": {
+                  "summary": "Geometry: scale a polygon from its center",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 25,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "transform_geometry",
+                      "arguments": {
+                        "operation": "scale",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        },
+                        "factor": 1.5,
+                        "origin": "center"
+                      }
+                    }
+                  }
+                },
+                "transformTranslate": {
+                  "summary": "Geometry: translate a polygon east",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 26,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "transform_geometry",
+                      "arguments": {
+                        "operation": "translate",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        },
+                        "distance": 1,
+                        "direction": 90,
+                        "units": "kilometers"
+                      }
+                    }
+                  }
+                },
+                "transformCenter": {
+                  "summary": "Geometry: calculate a bounding-box center",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 27,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "transform_geometry",
+                      "arguments": {
+                        "operation": "center",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "transformCenterMean": {
+                  "summary": "Geometry: calculate the mean center",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 28,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "transform_geometry",
+                      "arguments": {
+                        "operation": "center_mean",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "transformCenterMedian": {
+                  "summary": "Geometry: calculate the median center",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 29,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "transform_geometry",
+                      "arguments": {
+                        "operation": "center_median",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "transformCenterOfMass": {
+                  "summary": "Geometry: calculate a polygon center of mass",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 24,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "transform_geometry",
+                      "arguments": {
+                        "operation": "center_of_mass",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC response for the transform_geometry MCP tool. Tool execution and validation failures also use HTTP 200 with result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformGeometryToolCallResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid HTTP request or unsupported MCP protocol version. Tool validation errors are returned with HTTP 200 and result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "error": "Bad Request",
+                  "message": "MCP-Protocol-Version header must be \"2025-06-18\""
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Geoapify API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "error": "Unauthorized",
+                  "message": "Invalid apiKey"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or quota exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "error": "Too Many Requests",
+                  "message": "Quota exceeded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal gateway error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "error": "Internal Server Error",
+                  "message": "Request failed, please try again later"
+                }
+              }
+            }
+          }
+        },
+        "x-geoapify-mcp-tool": "transform_geometry",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/TransformGeometryInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/TransformGeometryOutput",
+        "x-geoapify-mcp-operations": [
+          {
+            "name": "buffer",
+            "description": "Create a polygon around the geometry at the requested radius.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryBufferInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryBufferOutput"
+            }
+          },
+          {
+            "name": "simplify",
+            "description": "Reduce geometry complexity while preserving its general shape.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometrySimplifyInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometrySimplifyOutput"
+            }
+          },
+          {
+            "name": "rotate",
+            "description": "Rotate the geometry clockwise by an angle in degrees.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryRotateInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryRotateOutput"
+            }
+          },
+          {
+            "name": "scale",
+            "description": "Scale the geometry by a positive multiplier.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryScaleInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryScaleOutput"
+            }
+          },
+          {
+            "name": "translate",
+            "description": "Move the geometry by a distance and compass direction.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryTranslateInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryTranslateOutput"
+            }
+          },
+          {
+            "name": "center",
+            "description": "Return the center of the geometry bounding box.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterOutput"
+            }
+          },
+          {
+            "name": "center_mean",
+            "description": "Return the arithmetic mean of all geometry vertices.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterMeanInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterMeanOutput"
+            }
+          },
+          {
+            "name": "center_median",
+            "description": "Return the median center that minimizes total distance to the input vertices.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterMedianInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterMedianOutput"
+            }
+          },
+          {
+            "name": "center_of_mass",
+            "description": "Return the centroid weighted by the geometry shape.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterOfMassInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterOfMassOutput"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JsonRpcId": {
+        "description": "JSON-RPC request identifier. The server echoes this value in the response.",
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "JsonRpcError": {
+        "type": "object",
+        "description": "JSON-RPC error object.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "JSON-RPC error code, such as -32600 for an invalid request, -32601 for an unknown method, or -32602 for invalid parameters."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable JSON-RPC error message."
+          },
+          "data": {
+            "description": "Optional machine-readable error details."
+          }
+        }
+      },
+      "JsonRpcErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC error response returned for invalid requests or unknown methods.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "error"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "error": {
+            "$ref": "#/components/schemas/JsonRpcError"
+          }
+        }
+      },
+      "GatewayError": {
+        "type": "object",
+        "description": "HTTP gateway error returned before or outside JSON-RPC tool execution.",
+        "required": [
+          "statusCode",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code."
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP error name."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message."
+          }
+        }
+      },
+      "TransformGeometryBufferInput": {
+        "type": "object",
+        "title": "buffer",
+        "description": "Create a polygon around the geometry at the requested radius.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "distance"
+        ],
+        "properties": {
+          "operation": {
+            "const": "buffer",
+            "description": "Create a polygon around the geometry at the requested radius."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          },
+          "distance": {
+            "type": "number",
+            "description": "Buffer radius in the selected units."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "metres",
+              "millimeters",
+              "millimetres",
+              "centimeters",
+              "centimetres",
+              "kilometers",
+              "kilometres",
+              "miles",
+              "nauticalmiles",
+              "inches",
+              "yards",
+              "feet",
+              "radians",
+              "degrees"
+            ],
+            "default": "kilometers",
+            "description": "Distance units. Defaults to kilometers."
+          },
+          "steps": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 128,
+            "default": 8,
+            "description": "Circular arc segments per quadrant."
+          }
+        }
+      },
+      "McpGeometryGeojsonOrEmptyResult": {
+        "type": "object",
+        "description": "Typed geometry-operation result. The type value determines the data schema.",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "GeoJSON result",
+            "required": [
+              "type",
+              "data"
+            ],
+            "properties": {
+              "type": {
+                "const": "geojson",
+                "description": "The result contains GeoJSON data."
+              },
+              "data": {
+                "type": "object",
+                "description": "GeoJSON Geometry, Feature, or FeatureCollection object."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Empty result",
+            "required": [
+              "type",
+              "data"
+            ],
+            "properties": {
+              "type": {
+                "const": "empty",
+                "description": "The operation completed but produced no geometry."
+              },
+              "data": {
+                "type": "null",
+                "description": "No result was produced."
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "TransformGeometryBufferOutput": {
+        "title": "buffer output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }` containing the buffer Polygon or MultiPolygon, or `{ \"type\": \"empty\", \"data\": null }` when no buffer geometry is produced.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonOrEmptyResult"
+          }
+        ]
+      },
+      "TransformGeometrySimplifyInput": {
+        "type": "object",
+        "title": "simplify",
+        "description": "Reduce geometry complexity while preserving its general shape.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "simplify",
+            "description": "Reduce geometry complexity while preserving its general shape."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          },
+          "tolerance": {
+            "type": "number",
+            "minimum": 0,
+            "default": 1,
+            "description": "Simplification tolerance."
+          },
+          "high_quality": {
+            "type": "boolean",
+            "default": false,
+            "description": "Use the slower, higher-quality simplification algorithm."
+          }
+        }
+      },
+      "McpGeometryGeojsonResult": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "GeoJSON result",
+            "required": [
+              "type",
+              "data"
+            ],
+            "properties": {
+              "type": {
+                "const": "geojson",
+                "description": "The result contains GeoJSON data."
+              },
+              "data": {
+                "type": "object",
+                "description": "GeoJSON Geometry, Feature, or FeatureCollection object."
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "TransformGeometrySimplifyOutput": {
+        "title": "simplify output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }` containing the simplified geometry.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonResult"
+          }
+        ]
+      },
+      "TransformGeometryRotateInput": {
+        "type": "object",
+        "title": "rotate",
+        "description": "Rotate the geometry clockwise by an angle in degrees.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "angle"
+        ],
+        "properties": {
+          "operation": {
+            "const": "rotate",
+            "description": "Rotate the geometry clockwise by an angle in degrees."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          },
+          "angle": {
+            "type": "number",
+            "description": "Clockwise rotation angle in degrees."
+          },
+          "pivot": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            },
+            "description": "Optional [longitude, latitude] pivot. Defaults to the geometry centroid."
+          }
+        }
+      },
+      "TransformGeometryRotateOutput": {
+        "title": "rotate output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }` containing the rotated geometry.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonResult"
+          }
+        ]
+      },
+      "TransformGeometryScaleInput": {
+        "type": "object",
+        "title": "scale",
+        "description": "Scale the geometry by a positive multiplier.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "factor"
+        ],
+        "properties": {
+          "operation": {
+            "const": "scale",
+            "description": "Scale the geometry by a positive multiplier."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          },
+          "factor": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Scale multiplier."
+          },
+          "origin": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "center",
+                  "centroid",
+                  "sw",
+                  "se",
+                  "nw",
+                  "ne"
+                ]
+              },
+              {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                },
+                "description": "A [longitude, latitude] pair; longitude is -180 to 180 and latitude is -90 to 90."
+              }
+            ],
+            "description": "Scale origin keyword or [longitude, latitude] position."
+          }
+        }
+      },
+      "TransformGeometryScaleOutput": {
+        "title": "scale output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }` containing the scaled geometry.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonResult"
+          }
+        ]
+      },
+      "TransformGeometryTranslateInput": {
+        "type": "object",
+        "title": "translate",
+        "description": "Move the geometry by a distance and compass direction.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "distance",
+          "direction"
+        ],
+        "properties": {
+          "operation": {
+            "const": "translate",
+            "description": "Move the geometry by a distance and compass direction."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          },
+          "distance": {
+            "type": "number",
+            "description": "Translation distance in the selected units."
+          },
+          "direction": {
+            "type": "number",
+            "description": "Direction in decimal degrees, where 0 is north and 90 is east."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "metres",
+              "millimeters",
+              "millimetres",
+              "centimeters",
+              "centimetres",
+              "kilometers",
+              "kilometres",
+              "miles",
+              "nauticalmiles",
+              "inches",
+              "yards",
+              "feet",
+              "radians",
+              "degrees"
+            ],
+            "default": "kilometers",
+            "description": "Distance units. Defaults to kilometers."
+          },
+          "z_translation": {
+            "type": "number",
+            "description": "Optional translation applied to a third coordinate."
+          }
+        }
+      },
+      "TransformGeometryTranslateOutput": {
+        "title": "translate output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }` containing the translated geometry.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonResult"
+          }
+        ]
+      },
+      "TransformGeometryCenterInput": {
+        "type": "object",
+        "title": "center",
+        "description": "Return the center of the geometry bounding box.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "center",
+            "description": "Return the center of the geometry bounding box."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "TransformGeometryCenterOutput": {
+        "title": "center output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the Point Feature at the center of the geometry bounding box.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonResult"
+          }
+        ]
+      },
+      "TransformGeometryCenterMeanInput": {
+        "type": "object",
+        "title": "center_mean",
+        "description": "Return the arithmetic mean of all geometry vertices.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "center_mean",
+            "description": "Return the arithmetic mean of all geometry vertices."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "TransformGeometryCenterMeanOutput": {
+        "title": "center_mean output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the Point Feature at the arithmetic mean of all vertices.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonResult"
+          }
+        ]
+      },
+      "TransformGeometryCenterMedianInput": {
+        "type": "object",
+        "title": "center_median",
+        "description": "Return the median center that minimizes total distance to the input vertices.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "center_median",
+            "description": "Return the median center that minimizes total distance to the input vertices."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "TransformGeometryCenterMedianOutput": {
+        "title": "center_median output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the median-center Point Feature.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonResult"
+          }
+        ]
+      },
+      "TransformGeometryCenterOfMassInput": {
+        "type": "object",
+        "title": "center_of_mass",
+        "description": "Return the centroid weighted by the geometry shape.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "center_of_mass",
+            "description": "Return the centroid weighted by the geometry shape."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "TransformGeometryCenterOfMassOutput": {
+        "title": "center_of_mass output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the center-of-mass Point Feature.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonResult"
+          }
+        ]
+      },
+      "TransformGeometryInput": {
+        "description": "Choose one transformation or center calculation. Each branch lists only the arguments accepted by that operation.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TransformGeometryBufferInput"
+          },
+          {
+            "$ref": "#/components/schemas/TransformGeometrySimplifyInput"
+          },
+          {
+            "$ref": "#/components/schemas/TransformGeometryRotateInput"
+          },
+          {
+            "$ref": "#/components/schemas/TransformGeometryScaleInput"
+          },
+          {
+            "$ref": "#/components/schemas/TransformGeometryTranslateInput"
+          },
+          {
+            "$ref": "#/components/schemas/TransformGeometryCenterInput"
+          },
+          {
+            "$ref": "#/components/schemas/TransformGeometryCenterMeanInput"
+          },
+          {
+            "$ref": "#/components/schemas/TransformGeometryCenterMedianInput"
+          },
+          {
+            "$ref": "#/components/schemas/TransformGeometryCenterOfMassInput"
+          }
+        ]
+      },
+      "TransformGeometryOutput": {
+        "$ref": "#/components/schemas/McpGeometryGeojsonOrEmptyResult"
+      },
+      "TransformGeometryToolCallParams": {
+        "type": "object",
+        "description": "MCP tools/call params for transform_geometry.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "arguments"
+        ],
+        "properties": {
+          "name": {
+            "description": "Registered MCP tool name.",
+            "const": "transform_geometry"
+          },
+          "arguments": {
+            "description": "Arguments validated by the transform_geometry input schema.",
+            "$ref": "#/components/schemas/TransformGeometryInput"
+          }
+        }
+      },
+      "TransformGeometryToolCallRequest": {
+        "type": "object",
+        "description": "JSON-RPC tools/call request for the transform_geometry MCP tool.",
+        "additionalProperties": false,
+        "required": [
+          "jsonrpc",
+          "id",
+          "method",
+          "params"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "description": "JSON-RPC protocol version.",
+            "const": "2.0"
+          },
+          "id": {
+            "description": "Client-supplied JSON-RPC request id echoed in the response.",
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "method": {
+            "description": "MCP method used to call a tool.",
+            "const": "tools/call"
+          },
+          "params": {
+            "description": "Tool call parameters for transform_geometry.",
+            "$ref": "#/components/schemas/TransformGeometryToolCallParams"
+          }
+        },
+        "examples": [
+          {
+            "jsonrpc": "2.0",
+            "id": 22,
+            "method": "tools/call",
+            "params": {
+              "name": "transform_geometry",
+              "arguments": {
+                "operation": "buffer",
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [
+                    13.405,
+                    52.52
+                  ]
+                },
+                "distance": 500,
+                "units": "meters",
+                "steps": 16
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 23,
+            "method": "tools/call",
+            "params": {
+              "name": "transform_geometry",
+              "arguments": {
+                "operation": "simplify",
+                "geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [
+                      13.38,
+                      52.5
+                    ],
+                    [
+                      13.41,
+                      52.53
+                    ],
+                    [
+                      13.44,
+                      52.54
+                    ]
+                  ]
+                },
+                "tolerance": 0.001,
+                "high_quality": true
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 24,
+            "method": "tools/call",
+            "params": {
+              "name": "transform_geometry",
+              "arguments": {
+                "operation": "rotate",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                },
+                "angle": 45
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 25,
+            "method": "tools/call",
+            "params": {
+              "name": "transform_geometry",
+              "arguments": {
+                "operation": "scale",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                },
+                "factor": 1.5,
+                "origin": "center"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 26,
+            "method": "tools/call",
+            "params": {
+              "name": "transform_geometry",
+              "arguments": {
+                "operation": "translate",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                },
+                "distance": 1,
+                "direction": 90,
+                "units": "kilometers"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 27,
+            "method": "tools/call",
+            "params": {
+              "name": "transform_geometry",
+              "arguments": {
+                "operation": "center",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 28,
+            "method": "tools/call",
+            "params": {
+              "name": "transform_geometry",
+              "arguments": {
+                "operation": "center_mean",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 29,
+            "method": "tools/call",
+            "params": {
+              "name": "transform_geometry",
+              "arguments": {
+                "operation": "center_median",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 24,
+            "method": "tools/call",
+            "params": {
+              "name": "transform_geometry",
+              "arguments": {
+                "operation": "center_of_mass",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "x-geoapify-mcp-tool": "transform_geometry",
+        "x-geoapify-mcp-category": "Utilities",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/TransformGeometryInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/TransformGeometryOutput",
+        "x-geoapify-mcp-operations": [
+          {
+            "name": "buffer",
+            "description": "Create a polygon around the geometry at the requested radius.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryBufferInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryBufferOutput"
+            }
+          },
+          {
+            "name": "simplify",
+            "description": "Reduce geometry complexity while preserving its general shape.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometrySimplifyInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometrySimplifyOutput"
+            }
+          },
+          {
+            "name": "rotate",
+            "description": "Rotate the geometry clockwise by an angle in degrees.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryRotateInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryRotateOutput"
+            }
+          },
+          {
+            "name": "scale",
+            "description": "Scale the geometry by a positive multiplier.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryScaleInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryScaleOutput"
+            }
+          },
+          {
+            "name": "translate",
+            "description": "Move the geometry by a distance and compass direction.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryTranslateInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryTranslateOutput"
+            }
+          },
+          {
+            "name": "center",
+            "description": "Return the center of the geometry bounding box.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterOutput"
+            }
+          },
+          {
+            "name": "center_mean",
+            "description": "Return the arithmetic mean of all geometry vertices.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterMeanInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterMeanOutput"
+            }
+          },
+          {
+            "name": "center_median",
+            "description": "Return the median center that minimizes total distance to the input vertices.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterMedianInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterMedianOutput"
+            }
+          },
+          {
+            "name": "center_of_mass",
+            "description": "Return the centroid weighted by the geometry shape.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterOfMassInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/TransformGeometryCenterOfMassOutput"
+            }
+          }
+        ]
+      },
+      "TransformGeometryToolCallSuccessResponse": {
+        "type": "object",
+        "description": "Successful JSON-RPC response with tool-specific structured content.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "structuredContent",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "JSON text representation of structuredContent.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded copy of structuredContent."
+                    }
+                  }
+                }
+              },
+              "structuredContent": {
+                "$ref": "#/components/schemas/TransformGeometryOutput"
+              },
+              "isError": {
+                "const": false
+              }
+            }
+          }
+        }
+      },
+      "ToolCallErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC tools/call response when tool execution fails.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "Tool error details represented as JSON text.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded GatewayError with statusCode, error, and message fields."
+                    }
+                  }
+                }
+              },
+              "isError": {
+                "const": true
+              }
+            }
+          }
+        }
+      },
+      "TransformGeometryToolCallResponse": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TransformGeometryToolCallSuccessResponse"
+          },
+          {
+            "$ref": "#/components/schemas/ToolCallErrorResponse"
+          },
+          {
+            "$ref": "#/components/schemas/JsonRpcErrorResponse"
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyInHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Geoapify API key header. Recommended authentication method for MCP clients."
+      }
+    }
+  },
+  "x-geoapify-mcp-tool-index": "index.json",
+  "security": [
+    {
+      "ApiKeyInHeader": []
+    }
+  ]
+}

@@ -1,0 +1,1252 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Geoapify MCP Tool: Routing: Calculate Route",
+    "version": "1.1.2",
+    "description": "AI-focused, tool-specific OpenAPI specification for calculate_route over the Geoapify JSON-RPC transport. Import this specification when an integration needs this tool without the full MCP catalog.",
+    "contact": {
+      "name": "Geoapify",
+      "url": "https://geoapify.com",
+      "email": "info@geoapify.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.geoapify.com/v1",
+      "description": "Default API endpoint."
+    },
+    {
+      "url": "https://api-eu.geoapify.com/v1",
+      "description": "EU-focused endpoint. Geoapify service processing uses EU infrastructure."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Routing",
+      "description": "Routing MCP tools."
+    }
+  ],
+  "paths": {
+    "/mcp": {
+      "post": {
+        "tags": [
+          "Routing"
+        ],
+        "operationId": "callCalculateRoute",
+        "summary": "Routing: Calculate Route",
+        "description": "Use this tool for one ordered route with total and per-leg travel cost plus optional geometry or turn instructions. Use calculate_route_matrix instead to compare travel times and distances across many source-target pairs.",
+        "parameters": [
+          {
+            "name": "MCP-Protocol-Version",
+            "in": "header",
+            "required": false,
+            "description": "Optional protocol version. Defaults to 2025-06-18 when omitted; explicitly unsupported versions are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2025-06-18"
+              ]
+            },
+            "example": "2025-06-18"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalculateRouteToolCallRequest"
+              },
+              "examples": {
+                "calculateRouteDrive": {
+                  "summary": "Calculate a driving route",
+                  "description": "Calculate a route between geographic waypoints for a supported travel mode.",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "calculate_route",
+                      "arguments": {
+                        "waypoints": [
+                          {
+                            "lat": 52.52,
+                            "lon": 13.405
+                          },
+                          {
+                            "lat": 52.51,
+                            "lon": 13.39
+                          }
+                        ],
+                        "mode": "drive",
+                        "geometry_scope": "none",
+                        "include_instructions": false,
+                        "units": "metric"
+                      }
+                    }
+                  }
+                },
+                "calculateRouteWalk": {
+                  "summary": "Calculate a walking route with instructions",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 2,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "calculate_route",
+                      "arguments": {
+                        "waypoints": [
+                          {
+                            "lat": 48.8606,
+                            "lon": 2.3376
+                          },
+                          {
+                            "lat": 48.8584,
+                            "lon": 2.2945
+                          }
+                        ],
+                        "mode": "walk",
+                        "geometry_scope": "steps",
+                        "geometry_format": "geojson",
+                        "include_instructions": true,
+                        "lang": "fr"
+                      }
+                    }
+                  }
+                },
+                "calculateRouteBicycle": {
+                  "summary": "Optimize a multi-stop bicycle route",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 3,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "calculate_route",
+                      "arguments": {
+                        "waypoints": [
+                          {
+                            "lat": 52.52,
+                            "lon": 13.405
+                          },
+                          {
+                            "lat": 52.5145,
+                            "lon": 13.3501
+                          },
+                          {
+                            "lat": 52.5096,
+                            "lon": 13.376
+                          }
+                        ],
+                        "mode": "bicycle",
+                        "optimize_stops": true,
+                        "geometry_scope": "route",
+                        "geometry_format": "polyline"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC response for the calculate_route MCP tool. Tool execution and validation failures also use HTTP 200 with result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalculateRouteToolCallResponse"
+                },
+                "examples": {
+                  "calculateRouteSuccess": {
+                    "summary": "Route result",
+                    "description": "Live response for the calculateRouteDrive request example.",
+                    "value": {
+                      "jsonrpc": "2.0",
+                      "id": 1,
+                      "result": {
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "{\n  \"distance\": 2250,\n  \"units\": \"metric\",\n  \"distance_units\": \"meters\",\n  \"time\": 222.763,\n  \"time_units\": \"seconds\",\n  \"waypoints\": [\n    {\n      \"lat\": 52.52,\n      \"lon\": 13.405\n    },\n    {\n      \"lat\": 52.51,\n      \"lon\": 13.39\n    }\n  ],\n  \"legs\": [\n    {\n      \"distance\": 2250,\n      \"time\": 222.763\n    }\n  ]\n}"
+                          }
+                        ],
+                        "structuredContent": {
+                          "distance": 2250,
+                          "units": "metric",
+                          "distance_units": "meters",
+                          "time": 222.763,
+                          "time_units": "seconds",
+                          "waypoints": [
+                            {
+                              "lat": 52.52,
+                              "lon": 13.405
+                            },
+                            {
+                              "lat": 52.51,
+                              "lon": 13.39
+                            }
+                          ],
+                          "legs": [
+                            {
+                              "distance": 2250,
+                              "time": 222.763
+                            }
+                          ]
+                        },
+                        "isError": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid HTTP request or unsupported MCP protocol version. Tool validation errors are returned with HTTP 200 and result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "error": "Bad Request",
+                  "message": "MCP-Protocol-Version header must be \"2025-06-18\""
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Geoapify API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "error": "Unauthorized",
+                  "message": "Invalid apiKey"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or quota exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "error": "Too Many Requests",
+                  "message": "Quota exceeded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal gateway error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "error": "Internal Server Error",
+                  "message": "Request failed, please try again later"
+                }
+              }
+            }
+          }
+        },
+        "x-geoapify-mcp-tool": "calculate_route",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/CalculateRouteInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/CalculateRouteOutput"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JsonRpcId": {
+        "description": "JSON-RPC request identifier. The server echoes this value in the response.",
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "JsonRpcError": {
+        "type": "object",
+        "description": "JSON-RPC error object.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "JSON-RPC error code, such as -32600 for an invalid request, -32601 for an unknown method, or -32602 for invalid parameters."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable JSON-RPC error message."
+          },
+          "data": {
+            "description": "Optional machine-readable error details."
+          }
+        }
+      },
+      "JsonRpcErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC error response returned for invalid requests or unknown methods.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "error"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "error": {
+            "$ref": "#/components/schemas/JsonRpcError"
+          }
+        }
+      },
+      "GatewayError": {
+        "type": "object",
+        "description": "HTTP gateway error returned before or outside JSON-RPC tool execution.",
+        "required": [
+          "statusCode",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code."
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP error name."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message."
+          }
+        }
+      },
+      "CalculateRouteInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "waypoints"
+        ],
+        "properties": {
+          "waypoints": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "lat",
+                "lon"
+              ],
+              "properties": {
+                "lat": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90,
+                  "description": "Waypoint latitude."
+                },
+                "lon": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180,
+                  "description": "Waypoint longitude."
+                }
+              }
+            },
+            "description": "Ordered route waypoints. Provide at least an origin and destination."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "drive",
+              "light_truck",
+              "medium_truck",
+              "truck",
+              "heavy_truck",
+              "truck_dangerous_goods",
+              "long_truck",
+              "bus",
+              "scooter",
+              "motorcycle",
+              "bicycle",
+              "mountain_bike",
+              "road_bike",
+              "walk",
+              "hike",
+              "transit",
+              "approximated_transit"
+            ],
+            "default": "drive",
+            "description": "Travel or vehicle mode used to calculate the route."
+          },
+          "waypoint_mode": {
+            "type": "string",
+            "enum": [
+              "stopover",
+              "through_stop",
+              "pass_through"
+            ],
+            "default": "stopover",
+            "description": "How intermediate waypoints are treated."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "balanced",
+              "short",
+              "less_maneuvers"
+            ],
+            "default": "balanced",
+            "description": "Route optimization preference."
+          },
+          "avoid": {
+            "type": "array",
+            "maxItems": 3,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "tolls",
+                "ferries",
+                "highways"
+              ]
+            },
+            "description": "Route features to avoid. Supported values are \"tolls\", \"ferries\", and \"highways\"."
+          },
+          "geometry_scope": {
+            "type": "string",
+            "enum": [
+              "none",
+              "route",
+              "legs",
+              "steps"
+            ],
+            "default": "route",
+            "description": "Geometry detail to return: none, route only, route and legs, or route, legs, and instruction steps."
+          },
+          "geometry_format": {
+            "type": "string",
+            "enum": [
+              "geojson",
+              "polyline"
+            ],
+            "default": "geojson",
+            "description": "Return geometry as a GeoJSON geometry object or an encoded precision-5 polyline."
+          },
+          "include_instructions": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include detailed turn-by-turn instruction steps."
+          },
+          "optimize_stops": {
+            "type": "boolean",
+            "default": false,
+            "description": "Optimize the order of intermediate stops while preserving the first and last waypoint."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "metric",
+              "imperial"
+            ],
+            "default": "metric",
+            "description": "Distance and speed units."
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "bg",
+              "ca",
+              "cs",
+              "da",
+              "de",
+              "el",
+              "en-GB",
+              "en",
+              "es",
+              "et",
+              "fi",
+              "fr",
+              "hi",
+              "hu",
+              "it",
+              "ja",
+              "nb-NO",
+              "nl",
+              "pl",
+              "pt-BR",
+              "pt",
+              "ro",
+              "ru",
+              "sk",
+              "sl",
+              "sv",
+              "tr",
+              "uk"
+            ],
+            "default": "en",
+            "description": "Language used for turn-by-turn instructions."
+          },
+          "traffic": {
+            "type": "string",
+            "enum": [
+              "free_flow",
+              "approximated"
+            ],
+            "default": "free_flow",
+            "description": "Traffic model used for motorized routing."
+          }
+        }
+      },
+      "CalculateRouteOutput": {
+        "type": "object",
+        "description": "Route totals, resolved waypoints, legs, and optional geometry.",
+        "required": [
+          "distance",
+          "units",
+          "distance_units",
+          "time",
+          "time_units",
+          "waypoints",
+          "legs"
+        ],
+        "properties": {
+          "distance": {
+            "type": "number",
+            "description": "Total route distance in distance_units."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "metric",
+              "imperial"
+            ],
+            "description": "Requested unit system."
+          },
+          "distance_units": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "miles"
+            ],
+            "description": "Unit used by distance fields."
+          },
+          "time": {
+            "type": "number",
+            "description": "Estimated total travel time in seconds."
+          },
+          "time_units": {
+            "type": "string",
+            "enum": [
+              "seconds"
+            ],
+            "description": "Unit used by time fields."
+          },
+          "waypoints": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "A resolved location in latitude/longitude form.",
+              "required": [
+                "lat",
+                "lon"
+              ],
+              "properties": {
+                "lat": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90
+                },
+                "lon": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                }
+              }
+            },
+            "description": "Resolved route waypoints in request order, or optimized order when enabled."
+          },
+          "legs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "time",
+                "distance"
+              ],
+              "properties": {
+                "time": {
+                  "type": "number"
+                },
+                "distance": {
+                  "type": "number"
+                },
+                "steps": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "time",
+                      "distance"
+                    ],
+                    "properties": {
+                      "time": {
+                        "type": "number"
+                      },
+                      "distance": {
+                        "type": "number"
+                      },
+                      "instruction": {
+                        "type": "object",
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "transition_instruction": {
+                            "type": "string"
+                          },
+                          "pre_transition_instruction": {
+                            "type": "string"
+                          },
+                          "post_transition_instruction": {
+                            "type": "string"
+                          },
+                          "contains_next_instruction": {
+                            "type": "boolean"
+                          },
+                          "streets": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "exit_number": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "exit_road_name": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "exit_towards": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "roundabout_exit": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "toll": {
+                        "type": "boolean"
+                      },
+                      "ferry": {
+                        "type": "boolean"
+                      },
+                      "bridge": {
+                        "type": "boolean"
+                      },
+                      "tunnel": {
+                        "type": "boolean"
+                      },
+                      "elevation": {
+                        "type": "number"
+                      },
+                      "elevation_gain": {
+                        "type": "number"
+                      },
+                      "max_elevation": {
+                        "type": "number"
+                      },
+                      "min_elevation": {
+                        "type": "number"
+                      },
+                      "admin_area": {
+                        "type": "array",
+                        "items": {
+                          "type": "integer"
+                        }
+                      },
+                      "speed": {
+                        "type": "number"
+                      },
+                      "speed_limit": {
+                        "type": "number"
+                      },
+                      "truck_limit": {
+                        "type": "number"
+                      },
+                      "surface": {
+                        "type": "string"
+                      },
+                      "lane_count": {
+                        "type": "number"
+                      },
+                      "road_class": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "roundabout": {
+                        "type": "boolean"
+                      },
+                      "rightside": {
+                        "type": "boolean"
+                      },
+                      "traversability": {
+                        "type": "string"
+                      },
+                      "from_stop_id": {
+                        "type": "string"
+                      },
+                      "from_stop_name": {
+                        "type": "string"
+                      },
+                      "to_stop_id": {
+                        "type": "string"
+                      },
+                      "to_stop_name": {
+                        "type": "string"
+                      },
+                      "geometry": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "type",
+                              "coordinates"
+                            ],
+                            "properties": {
+                              "type": {
+                                "const": "LineString"
+                              },
+                              "coordinates": {
+                                "type": "array",
+                                "minItems": 2,
+                                "items": {
+                                  "type": "array",
+                                  "minItems": 2,
+                                  "maxItems": 2,
+                                  "prefixItems": [
+                                    {
+                                      "type": "number",
+                                      "minimum": -180,
+                                      "maximum": 180
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -90,
+                                      "maximum": 90
+                                    }
+                                  ],
+                                  "items": {
+                                    "not": {}
+                                  },
+                                  "description": "A [longitude, latitude] pair; longitude is -180 to 180 and latitude is -90 to 90."
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "type": "string",
+                            "description": "Precision-5 encoded polyline."
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "country_code": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "elevation": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "elevation_range": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "prefixItems": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ],
+                    "items": {
+                      "not": {}
+                    },
+                    "description": "An [elevation, distance] pair."
+                  }
+                },
+                "agency_name": {
+                  "type": "string"
+                },
+                "agency_id": {
+                  "type": "string"
+                },
+                "agency_url": {
+                  "type": "string"
+                },
+                "route_id": {
+                  "type": "string"
+                },
+                "route_short_name": {
+                  "type": "string"
+                },
+                "route_long_name": {
+                  "type": "string"
+                },
+                "trip_id": {
+                  "type": "string"
+                },
+                "geometry": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "type",
+                        "coordinates"
+                      ],
+                      "properties": {
+                        "type": {
+                          "const": "LineString"
+                        },
+                        "coordinates": {
+                          "type": "array",
+                          "minItems": 2,
+                          "items": {
+                            "type": "array",
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "prefixItems": [
+                              {
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              },
+                              {
+                                "type": "number",
+                                "minimum": -90,
+                                "maximum": 90
+                              }
+                            ],
+                            "items": {
+                              "not": {}
+                            },
+                            "description": "A [longitude, latitude] pair; longitude is -180 to 180 and latitude is -90 to 90."
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "string",
+                      "description": "Precision-5 encoded polyline."
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Route segment between each consecutive waypoint pair."
+          },
+          "geometry": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "coordinates"
+                ],
+                "properties": {
+                  "type": {
+                    "const": "LineString"
+                  },
+                  "coordinates": {
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "prefixItems": [
+                        {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        }
+                      ],
+                      "items": {
+                        "not": {}
+                      },
+                      "description": "A [longitude, latitude] pair; longitude is -180 to 180 and latitude is -90 to 90."
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "coordinates"
+                ],
+                "properties": {
+                  "type": {
+                    "const": "MultiLineString"
+                  },
+                  "coordinates": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "minItems": 2,
+                      "items": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "prefixItems": [
+                          {
+                            "type": "number",
+                            "minimum": -180,
+                            "maximum": 180
+                          },
+                          {
+                            "type": "number",
+                            "minimum": -90,
+                            "maximum": 90
+                          }
+                        ],
+                        "items": {
+                          "not": {}
+                        },
+                        "description": "A [longitude, latitude] pair; longitude is -180 to 180 and latitude is -90 to 90."
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "string",
+                "description": "Precision-5 encoded polyline."
+              }
+            ],
+            "description": "Optional route geometry in the requested geometry format."
+          }
+        }
+      },
+      "CalculateRouteToolCallParams": {
+        "type": "object",
+        "description": "MCP tools/call params for calculate_route.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "arguments"
+        ],
+        "properties": {
+          "name": {
+            "description": "Registered MCP tool name.",
+            "const": "calculate_route"
+          },
+          "arguments": {
+            "description": "Arguments validated by the calculate_route input schema.",
+            "$ref": "#/components/schemas/CalculateRouteInput"
+          }
+        }
+      },
+      "CalculateRouteToolCallRequest": {
+        "type": "object",
+        "description": "JSON-RPC tools/call request for the calculate_route MCP tool.",
+        "additionalProperties": false,
+        "required": [
+          "jsonrpc",
+          "id",
+          "method",
+          "params"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "description": "JSON-RPC protocol version.",
+            "const": "2.0"
+          },
+          "id": {
+            "description": "Client-supplied JSON-RPC request id echoed in the response.",
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "method": {
+            "description": "MCP method used to call a tool.",
+            "const": "tools/call"
+          },
+          "params": {
+            "description": "Tool call parameters for calculate_route.",
+            "$ref": "#/components/schemas/CalculateRouteToolCallParams"
+          }
+        },
+        "examples": [
+          {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/call",
+            "params": {
+              "name": "calculate_route",
+              "arguments": {
+                "waypoints": [
+                  {
+                    "lat": 52.52,
+                    "lon": 13.405
+                  },
+                  {
+                    "lat": 52.51,
+                    "lon": 13.39
+                  }
+                ],
+                "mode": "drive",
+                "geometry_scope": "none",
+                "include_instructions": false,
+                "units": "metric"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {
+              "name": "calculate_route",
+              "arguments": {
+                "waypoints": [
+                  {
+                    "lat": 48.8606,
+                    "lon": 2.3376
+                  },
+                  {
+                    "lat": 48.8584,
+                    "lon": 2.2945
+                  }
+                ],
+                "mode": "walk",
+                "geometry_scope": "steps",
+                "geometry_format": "geojson",
+                "include_instructions": true,
+                "lang": "fr"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "tools/call",
+            "params": {
+              "name": "calculate_route",
+              "arguments": {
+                "waypoints": [
+                  {
+                    "lat": 52.52,
+                    "lon": 13.405
+                  },
+                  {
+                    "lat": 52.5145,
+                    "lon": 13.3501
+                  },
+                  {
+                    "lat": 52.5096,
+                    "lon": 13.376
+                  }
+                ],
+                "mode": "bicycle",
+                "optimize_stops": true,
+                "geometry_scope": "route",
+                "geometry_format": "polyline"
+              }
+            }
+          }
+        ],
+        "x-geoapify-mcp-tool": "calculate_route",
+        "x-geoapify-mcp-category": "Routing",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/CalculateRouteInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/CalculateRouteOutput"
+      },
+      "CalculateRouteToolCallSuccessResponse": {
+        "type": "object",
+        "description": "Successful JSON-RPC response with tool-specific structured content.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "structuredContent",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "JSON text representation of structuredContent.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded copy of structuredContent."
+                    }
+                  }
+                }
+              },
+              "structuredContent": {
+                "$ref": "#/components/schemas/CalculateRouteOutput"
+              },
+              "isError": {
+                "const": false
+              }
+            }
+          }
+        }
+      },
+      "ToolCallErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC tools/call response when tool execution fails.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "Tool error details represented as JSON text.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded GatewayError with statusCode, error, and message fields."
+                    }
+                  }
+                }
+              },
+              "isError": {
+                "const": true
+              }
+            }
+          }
+        }
+      },
+      "CalculateRouteToolCallResponse": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CalculateRouteToolCallSuccessResponse"
+          },
+          {
+            "$ref": "#/components/schemas/ToolCallErrorResponse"
+          },
+          {
+            "$ref": "#/components/schemas/JsonRpcErrorResponse"
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyInHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Geoapify API key header. Recommended authentication method for MCP clients."
+      }
+    }
+  },
+  "x-geoapify-mcp-tool-index": "index.json",
+  "security": [
+    {
+      "ApiKeyInHeader": []
+    }
+  ]
+}

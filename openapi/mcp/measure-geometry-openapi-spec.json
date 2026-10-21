@@ -1,0 +1,1774 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Geoapify MCP Tool: Utilities: Measure Geometry",
+    "version": "1.1.2",
+    "description": "AI-focused, tool-specific OpenAPI specification for measure_geometry over the Geoapify JSON-RPC transport. Import this specification when an integration needs this tool without the full MCP catalog.",
+    "contact": {
+      "name": "Geoapify",
+      "url": "https://geoapify.com",
+      "email": "info@geoapify.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.geoapify.com/v1",
+      "description": "Default API endpoint."
+    },
+    {
+      "url": "https://api-eu.geoapify.com/v1",
+      "description": "EU-focused endpoint. Geoapify service processing uses EU infrastructure."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Utilities",
+      "description": "Utilities MCP tools."
+    }
+  ],
+  "paths": {
+    "/mcp": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "operationId": "callMeasureGeometry",
+        "summary": "Utilities: Measure Geometry",
+        "description": "Use this tool for numeric area, length, or distance calculations and for bounding-box, along-line, or nearest-point results. Use evaluate_spatial_relation for true/false predicates and transform_geometry to modify a geometry.\n\n## Operations\n\n### `area`\n\nCalculate Polygon or MultiPolygon area in square meters.\n\n**Input**\n\n- Required: `operation` = `\"area\"`, `geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"number\", \"data\": number }`; `data` is the area in square meters.\n\n### `distance`\n\nCalculate the distance between two points.\n\n**Input**\n\n- Required: `operation` = `\"distance\"`, `geometry`, `other_geometry`\n- Optional: `units`\n\n**Output**\n\nReturns `{ \"type\": \"number\", \"data\": number }`; `data` is the point-to-point distance in the selected `units` (kilometers by default).\n\n### `length`\n\nCalculate LineString or MultiLineString length.\n\n**Input**\n\n- Required: `operation` = `\"length\"`, `geometry`\n- Optional: `units`\n\n**Output**\n\nReturns `{ \"type\": \"number\", \"data\": number }`; `data` is the line length in the selected `units` (kilometers by default).\n\n### `bbox`\n\nCalculate a rectangular bounding-box Feature.\n\n**Input**\n\n- Required: `operation` = `\"bbox\"`, `geometry`\n- Optional: `recompute`\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is a rectangular Polygon Feature whose `properties.bbox` contains `[west, south, east, north]`.\n\n### `point_to_line_distance`\n\nCalculate the shortest distance from a point to a line.\n\n**Input**\n\n- Required: `operation` = `\"point_to_line_distance\"`, `geometry`, `other_geometry`\n- Optional: `units`\n\n**Output**\n\nReturns `{ \"type\": \"number\", \"data\": number }`; `data` is the shortest distance from the Point to the LineString in the selected `units` (kilometers by default).\n\n### `point_to_polygon_distance`\n\nCalculate the shortest distance from a point to a polygon boundary.\n\n**Input**\n\n- Required: `operation` = `\"point_to_polygon_distance\"`, `geometry`, `other_geometry`\n- Optional: `units`\n\n**Output**\n\nReturns `{ \"type\": \"number\", \"data\": number }`; `data` is the shortest distance from the Point to the Polygon or MultiPolygon boundary in the selected `units` (kilometers by default).\n\n### `nearest_point_on_line`\n\nReturn the nearest point on a line to the supplied point.\n\n**Input**\n\n- Required: `operation` = `\"nearest_point_on_line\"`, `geometry`, `other_geometry`\n- Optional: `units`\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the nearest Point Feature on the target line, including line-location metadata in its properties.\n\n### `along`\n\nReturn the point at a distance from the start of a LineString.\n\n**Input**\n\n- Required: `operation` = `\"along\"`, `geometry`, `distance`\n- Optional: `units`\n\n**Output**\n\nReturns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the Point Feature at `distance` from the start of the LineString.",
+        "parameters": [
+          {
+            "name": "MCP-Protocol-Version",
+            "in": "header",
+            "required": false,
+            "description": "Optional protocol version. Defaults to 2025-06-18 when omitted; explicitly unsupported versions are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2025-06-18"
+              ]
+            },
+            "example": "2025-06-18"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MeasureGeometryToolCallRequest"
+              },
+              "examples": {
+                "measureArea": {
+                  "summary": "Geometry: calculate polygon area",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 16,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "measure_geometry",
+                      "arguments": {
+                        "operation": "area",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "measureDistance": {
+                  "summary": "Geometry: measure distance between two points",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 17,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "measure_geometry",
+                      "arguments": {
+                        "operation": "distance",
+                        "geometry": {
+                          "type": "Point",
+                          "coordinates": [
+                            13.405,
+                            52.52
+                          ]
+                        },
+                        "other_geometry": {
+                          "type": "Point",
+                          "coordinates": [
+                            13.39,
+                            52.51
+                          ]
+                        },
+                        "units": "meters"
+                      }
+                    }
+                  }
+                },
+                "measureLengthLineString": {
+                  "summary": "Geometry: measure a LineString",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 18,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "measure_geometry",
+                      "arguments": {
+                        "operation": "length",
+                        "geometry": {
+                          "type": "LineString",
+                          "coordinates": [
+                            [
+                              13.38,
+                              52.5
+                            ],
+                            [
+                              13.41,
+                              52.53
+                            ],
+                            [
+                              13.44,
+                              52.54
+                            ]
+                          ]
+                        },
+                        "units": "meters"
+                      }
+                    }
+                  }
+                },
+                "measureLengthMultiLineString": {
+                  "summary": "Geometry: measure a MultiLineString",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 19,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "measure_geometry",
+                      "arguments": {
+                        "operation": "length",
+                        "geometry": {
+                          "type": "MultiLineString",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.41,
+                                52.52
+                              ]
+                            ],
+                            [
+                              [
+                                13.41,
+                                52.52
+                              ],
+                              [
+                                13.44,
+                                52.54
+                              ]
+                            ]
+                          ]
+                        },
+                        "units": "kilometers"
+                      }
+                    }
+                  }
+                },
+                "measureBbox": {
+                  "summary": "Geometry: calculate a bounding box",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 20,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "measure_geometry",
+                      "arguments": {
+                        "operation": "bbox",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        },
+                        "recompute": true
+                      }
+                    }
+                  }
+                },
+                "measureNearestPointOnLine": {
+                  "summary": "Geometry: find the nearest position on a line",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 21,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "measure_geometry",
+                      "arguments": {
+                        "operation": "nearest_point_on_line",
+                        "geometry": {
+                          "type": "Point",
+                          "coordinates": [
+                            13.405,
+                            52.52
+                          ]
+                        },
+                        "other_geometry": {
+                          "type": "LineString",
+                          "coordinates": [
+                            [
+                              13.38,
+                              52.5
+                            ],
+                            [
+                              13.41,
+                              52.53
+                            ],
+                            [
+                              13.44,
+                              52.54
+                            ]
+                          ]
+                        },
+                        "units": "meters"
+                      }
+                    }
+                  }
+                },
+                "measurePointToLineDistance": {
+                  "summary": "Geometry: measure point-to-line distance",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 22,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "measure_geometry",
+                      "arguments": {
+                        "operation": "point_to_line_distance",
+                        "geometry": {
+                          "type": "Point",
+                          "coordinates": [
+                            13.405,
+                            52.52
+                          ]
+                        },
+                        "other_geometry": {
+                          "type": "LineString",
+                          "coordinates": [
+                            [
+                              13.38,
+                              52.5
+                            ],
+                            [
+                              13.41,
+                              52.53
+                            ],
+                            [
+                              13.44,
+                              52.54
+                            ]
+                          ]
+                        },
+                        "units": "meters"
+                      }
+                    }
+                  }
+                },
+                "measurePointToPolygonDistance": {
+                  "summary": "Geometry: measure point-to-polygon distance",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 23,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "measure_geometry",
+                      "arguments": {
+                        "operation": "point_to_polygon_distance",
+                        "geometry": {
+                          "type": "Point",
+                          "coordinates": [
+                            13.45,
+                            52.56
+                          ]
+                        },
+                        "other_geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        },
+                        "units": "meters"
+                      }
+                    }
+                  }
+                },
+                "measureAlong": {
+                  "summary": "Geometry: find a point along a line",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 24,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "measure_geometry",
+                      "arguments": {
+                        "operation": "along",
+                        "geometry": {
+                          "type": "LineString",
+                          "coordinates": [
+                            [
+                              13.38,
+                              52.5
+                            ],
+                            [
+                              13.41,
+                              52.53
+                            ],
+                            [
+                              13.44,
+                              52.54
+                            ]
+                          ]
+                        },
+                        "distance": 2,
+                        "units": "kilometers"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC response for the measure_geometry MCP tool. Tool execution and validation failures also use HTTP 200 with result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeasureGeometryToolCallResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid HTTP request or unsupported MCP protocol version. Tool validation errors are returned with HTTP 200 and result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "error": "Bad Request",
+                  "message": "MCP-Protocol-Version header must be \"2025-06-18\""
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Geoapify API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "error": "Unauthorized",
+                  "message": "Invalid apiKey"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or quota exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "error": "Too Many Requests",
+                  "message": "Quota exceeded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal gateway error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "error": "Internal Server Error",
+                  "message": "Request failed, please try again later"
+                }
+              }
+            }
+          }
+        },
+        "x-geoapify-mcp-tool": "measure_geometry",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/MeasureGeometryInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/MeasureGeometryOutput",
+        "x-geoapify-mcp-operations": [
+          {
+            "name": "area",
+            "description": "Calculate Polygon or MultiPolygon area in square meters.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryAreaInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryAreaOutput"
+            }
+          },
+          {
+            "name": "distance",
+            "description": "Calculate the distance between two points.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryDistanceInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryDistanceOutput"
+            }
+          },
+          {
+            "name": "length",
+            "description": "Calculate LineString or MultiLineString length.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryLengthInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryLengthOutput"
+            }
+          },
+          {
+            "name": "bbox",
+            "description": "Calculate a rectangular bounding-box Feature.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryBboxInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryBboxOutput"
+            }
+          },
+          {
+            "name": "point_to_line_distance",
+            "description": "Calculate the shortest distance from a point to a line.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryPointToLineDistanceInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryPointToLineDistanceOutput"
+            }
+          },
+          {
+            "name": "point_to_polygon_distance",
+            "description": "Calculate the shortest distance from a point to a polygon boundary.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryPointToPolygonDistanceInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryPointToPolygonDistanceOutput"
+            }
+          },
+          {
+            "name": "nearest_point_on_line",
+            "description": "Return the nearest point on a line to the supplied point.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryNearestPointOnLineInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryNearestPointOnLineOutput"
+            }
+          },
+          {
+            "name": "along",
+            "description": "Return the point at a distance from the start of a LineString.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryAlongInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryAlongOutput"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JsonRpcId": {
+        "description": "JSON-RPC request identifier. The server echoes this value in the response.",
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "JsonRpcError": {
+        "type": "object",
+        "description": "JSON-RPC error object.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "JSON-RPC error code, such as -32600 for an invalid request, -32601 for an unknown method, or -32602 for invalid parameters."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable JSON-RPC error message."
+          },
+          "data": {
+            "description": "Optional machine-readable error details."
+          }
+        }
+      },
+      "JsonRpcErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC error response returned for invalid requests or unknown methods.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "error"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "error": {
+            "$ref": "#/components/schemas/JsonRpcError"
+          }
+        }
+      },
+      "GatewayError": {
+        "type": "object",
+        "description": "HTTP gateway error returned before or outside JSON-RPC tool execution.",
+        "required": [
+          "statusCode",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code."
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP error name."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message."
+          }
+        }
+      },
+      "MeasureGeometryAreaInput": {
+        "type": "object",
+        "title": "area",
+        "description": "Calculate Polygon or MultiPolygon area in square meters.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "area",
+            "description": "Calculate Polygon or MultiPolygon area in square meters."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Polygon, or MultiPolygon); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "McpGeometryNumberResult": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Numeric result",
+            "required": [
+              "type",
+              "data"
+            ],
+            "properties": {
+              "type": {
+                "const": "number",
+                "description": "The result contains a numeric measurement."
+              },
+              "data": {
+                "type": "number",
+                "description": "The calculated numeric value in the units defined by the selected operation."
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "MeasureGeometryAreaOutput": {
+        "title": "area output",
+        "description": "Returns `{ \"type\": \"number\", \"data\": number }`; `data` is the area in square meters.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryNumberResult"
+          }
+        ]
+      },
+      "MeasureGeometryDistanceInput": {
+        "type": "object",
+        "title": "distance",
+        "description": "Calculate the distance between two points.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "other_geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "distance",
+            "description": "Calculate the distance between two points."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "First point; GeoJSON Geometry (Point); not a Feature or FeatureCollection."
+          },
+          "other_geometry": {
+            "type": "object",
+            "description": "Second point; GeoJSON Geometry (Point); not a Feature or FeatureCollection."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "metres",
+              "millimeters",
+              "millimetres",
+              "centimeters",
+              "centimetres",
+              "kilometers",
+              "kilometres",
+              "miles",
+              "nauticalmiles",
+              "inches",
+              "yards",
+              "feet",
+              "radians",
+              "degrees"
+            ],
+            "default": "kilometers",
+            "description": "Units for the distance or length. Defaults to kilometers."
+          }
+        }
+      },
+      "MeasureGeometryDistanceOutput": {
+        "title": "distance output",
+        "description": "Returns `{ \"type\": \"number\", \"data\": number }`; `data` is the point-to-point distance in the selected `units` (kilometers by default).",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryNumberResult"
+          }
+        ]
+      },
+      "MeasureGeometryLengthInput": {
+        "type": "object",
+        "title": "length",
+        "description": "Calculate LineString or MultiLineString length.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "length",
+            "description": "Calculate LineString or MultiLineString length."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (LineString, or MultiLineString); not a Feature or FeatureCollection."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "metres",
+              "millimeters",
+              "millimetres",
+              "centimeters",
+              "centimetres",
+              "kilometers",
+              "kilometres",
+              "miles",
+              "nauticalmiles",
+              "inches",
+              "yards",
+              "feet",
+              "radians",
+              "degrees"
+            ],
+            "default": "kilometers",
+            "description": "Units for the distance or length. Defaults to kilometers."
+          }
+        }
+      },
+      "MeasureGeometryLengthOutput": {
+        "title": "length output",
+        "description": "Returns `{ \"type\": \"number\", \"data\": number }`; `data` is the line length in the selected `units` (kilometers by default).",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryNumberResult"
+          }
+        ]
+      },
+      "MeasureGeometryBboxInput": {
+        "type": "object",
+        "title": "bbox",
+        "description": "Calculate a rectangular bounding-box Feature.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "bbox",
+            "description": "Calculate a rectangular bounding-box Feature."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          },
+          "recompute": {
+            "type": "boolean",
+            "default": false,
+            "description": "Ignore a pre-existing bbox and recompute bounds from coordinates."
+          }
+        }
+      },
+      "McpGeometryGeojsonResult": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "GeoJSON result",
+            "required": [
+              "type",
+              "data"
+            ],
+            "properties": {
+              "type": {
+                "const": "geojson",
+                "description": "The result contains GeoJSON data."
+              },
+              "data": {
+                "type": "object",
+                "description": "GeoJSON Geometry, Feature, or FeatureCollection object."
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "MeasureGeometryBboxOutput": {
+        "title": "bbox output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is a rectangular Polygon Feature whose `properties.bbox` contains `[west, south, east, north]`.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonResult"
+          }
+        ]
+      },
+      "MeasureGeometryPointToLineDistanceInput": {
+        "type": "object",
+        "title": "point_to_line_distance",
+        "description": "Calculate the shortest distance from a point to a line.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "other_geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "point_to_line_distance",
+            "description": "Calculate the shortest distance from a point to a line."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "Point to measure from; GeoJSON Geometry (Point); not a Feature or FeatureCollection."
+          },
+          "other_geometry": {
+            "type": "object",
+            "description": "Target line; GeoJSON Geometry (LineString); not a Feature or FeatureCollection."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "metres",
+              "millimeters",
+              "millimetres",
+              "centimeters",
+              "centimetres",
+              "kilometers",
+              "kilometres",
+              "miles",
+              "nauticalmiles",
+              "inches",
+              "yards",
+              "feet",
+              "radians",
+              "degrees"
+            ],
+            "default": "kilometers",
+            "description": "Units for the distance or length. Defaults to kilometers."
+          }
+        }
+      },
+      "MeasureGeometryPointToLineDistanceOutput": {
+        "title": "point_to_line_distance output",
+        "description": "Returns `{ \"type\": \"number\", \"data\": number }`; `data` is the shortest distance from the Point to the LineString in the selected `units` (kilometers by default).",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryNumberResult"
+          }
+        ]
+      },
+      "MeasureGeometryPointToPolygonDistanceInput": {
+        "type": "object",
+        "title": "point_to_polygon_distance",
+        "description": "Calculate the shortest distance from a point to a polygon boundary.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "other_geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "point_to_polygon_distance",
+            "description": "Calculate the shortest distance from a point to a polygon boundary."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "Point to measure from; GeoJSON Geometry (Point); not a Feature or FeatureCollection."
+          },
+          "other_geometry": {
+            "type": "object",
+            "description": "Target polygon; GeoJSON Geometry (Polygon, or MultiPolygon); not a Feature or FeatureCollection."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "metres",
+              "millimeters",
+              "millimetres",
+              "centimeters",
+              "centimetres",
+              "kilometers",
+              "kilometres",
+              "miles",
+              "nauticalmiles",
+              "inches",
+              "yards",
+              "feet",
+              "radians",
+              "degrees"
+            ],
+            "default": "kilometers",
+            "description": "Units for the distance or length. Defaults to kilometers."
+          }
+        }
+      },
+      "MeasureGeometryPointToPolygonDistanceOutput": {
+        "title": "point_to_polygon_distance output",
+        "description": "Returns `{ \"type\": \"number\", \"data\": number }`; `data` is the shortest distance from the Point to the Polygon or MultiPolygon boundary in the selected `units` (kilometers by default).",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryNumberResult"
+          }
+        ]
+      },
+      "MeasureGeometryNearestPointOnLineInput": {
+        "type": "object",
+        "title": "nearest_point_on_line",
+        "description": "Return the nearest point on a line to the supplied point.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "other_geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "nearest_point_on_line",
+            "description": "Return the nearest point on a line to the supplied point."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "Point from which to search; GeoJSON Geometry (Point); not a Feature or FeatureCollection."
+          },
+          "other_geometry": {
+            "type": "object",
+            "description": "Target line; GeoJSON Geometry (LineString, or MultiLineString); not a Feature or FeatureCollection."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "metres",
+              "millimeters",
+              "millimetres",
+              "centimeters",
+              "centimetres",
+              "kilometers",
+              "kilometres",
+              "miles",
+              "nauticalmiles",
+              "inches",
+              "yards",
+              "feet",
+              "radians",
+              "degrees"
+            ],
+            "default": "kilometers",
+            "description": "Units for the distance or length. Defaults to kilometers."
+          }
+        }
+      },
+      "MeasureGeometryNearestPointOnLineOutput": {
+        "title": "nearest_point_on_line output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the nearest Point Feature on the target line, including line-location metadata in its properties.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonResult"
+          }
+        ]
+      },
+      "MeasureGeometryAlongInput": {
+        "type": "object",
+        "title": "along",
+        "description": "Return the point at a distance from the start of a LineString.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "distance"
+        ],
+        "properties": {
+          "operation": {
+            "const": "along",
+            "description": "Return the point at a distance from the start of a LineString."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (LineString); not a Feature or FeatureCollection."
+          },
+          "distance": {
+            "type": "number",
+            "description": "Distance from the start of the LineString in the selected units."
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "metres",
+              "millimeters",
+              "millimetres",
+              "centimeters",
+              "centimetres",
+              "kilometers",
+              "kilometres",
+              "miles",
+              "nauticalmiles",
+              "inches",
+              "yards",
+              "feet",
+              "radians",
+              "degrees"
+            ],
+            "default": "kilometers",
+            "description": "Units for the distance or length. Defaults to kilometers."
+          }
+        }
+      },
+      "MeasureGeometryAlongOutput": {
+        "title": "along output",
+        "description": "Returns `{ \"type\": \"geojson\", \"data\": Feature }`; `data` is the Point Feature at `distance` from the start of the LineString.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryGeojsonResult"
+          }
+        ]
+      },
+      "MeasureGeometryInput": {
+        "description": "Choose one measurement or point-location operation. Each branch lists only the arguments and GeoJSON types accepted by that operation.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/MeasureGeometryAreaInput"
+          },
+          {
+            "$ref": "#/components/schemas/MeasureGeometryDistanceInput"
+          },
+          {
+            "$ref": "#/components/schemas/MeasureGeometryLengthInput"
+          },
+          {
+            "$ref": "#/components/schemas/MeasureGeometryBboxInput"
+          },
+          {
+            "$ref": "#/components/schemas/MeasureGeometryPointToLineDistanceInput"
+          },
+          {
+            "$ref": "#/components/schemas/MeasureGeometryPointToPolygonDistanceInput"
+          },
+          {
+            "$ref": "#/components/schemas/MeasureGeometryNearestPointOnLineInput"
+          },
+          {
+            "$ref": "#/components/schemas/MeasureGeometryAlongInput"
+          }
+        ]
+      },
+      "McpGeometryGeojsonOrNumberOrEmptyResult": {
+        "type": "object",
+        "description": "Typed geometry-operation result. The type value determines the data schema.",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "GeoJSON result",
+            "required": [
+              "type",
+              "data"
+            ],
+            "properties": {
+              "type": {
+                "const": "geojson",
+                "description": "The result contains GeoJSON data."
+              },
+              "data": {
+                "type": "object",
+                "description": "GeoJSON Geometry, Feature, or FeatureCollection object."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Numeric result",
+            "required": [
+              "type",
+              "data"
+            ],
+            "properties": {
+              "type": {
+                "const": "number",
+                "description": "The result contains a numeric measurement."
+              },
+              "data": {
+                "type": "number",
+                "description": "The calculated numeric value in the units defined by the selected operation."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Empty result",
+            "required": [
+              "type",
+              "data"
+            ],
+            "properties": {
+              "type": {
+                "const": "empty",
+                "description": "The operation completed but produced no geometry."
+              },
+              "data": {
+                "type": "null",
+                "description": "No result was produced."
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "MeasureGeometryOutput": {
+        "$ref": "#/components/schemas/McpGeometryGeojsonOrNumberOrEmptyResult"
+      },
+      "MeasureGeometryToolCallParams": {
+        "type": "object",
+        "description": "MCP tools/call params for measure_geometry.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "arguments"
+        ],
+        "properties": {
+          "name": {
+            "description": "Registered MCP tool name.",
+            "const": "measure_geometry"
+          },
+          "arguments": {
+            "description": "Arguments validated by the measure_geometry input schema.",
+            "$ref": "#/components/schemas/MeasureGeometryInput"
+          }
+        }
+      },
+      "MeasureGeometryToolCallRequest": {
+        "type": "object",
+        "description": "JSON-RPC tools/call request for the measure_geometry MCP tool.",
+        "additionalProperties": false,
+        "required": [
+          "jsonrpc",
+          "id",
+          "method",
+          "params"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "description": "JSON-RPC protocol version.",
+            "const": "2.0"
+          },
+          "id": {
+            "description": "Client-supplied JSON-RPC request id echoed in the response.",
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "method": {
+            "description": "MCP method used to call a tool.",
+            "const": "tools/call"
+          },
+          "params": {
+            "description": "Tool call parameters for measure_geometry.",
+            "$ref": "#/components/schemas/MeasureGeometryToolCallParams"
+          }
+        },
+        "examples": [
+          {
+            "jsonrpc": "2.0",
+            "id": 16,
+            "method": "tools/call",
+            "params": {
+              "name": "measure_geometry",
+              "arguments": {
+                "operation": "area",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 17,
+            "method": "tools/call",
+            "params": {
+              "name": "measure_geometry",
+              "arguments": {
+                "operation": "distance",
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [
+                    13.405,
+                    52.52
+                  ]
+                },
+                "other_geometry": {
+                  "type": "Point",
+                  "coordinates": [
+                    13.39,
+                    52.51
+                  ]
+                },
+                "units": "meters"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 18,
+            "method": "tools/call",
+            "params": {
+              "name": "measure_geometry",
+              "arguments": {
+                "operation": "length",
+                "geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [
+                      13.38,
+                      52.5
+                    ],
+                    [
+                      13.41,
+                      52.53
+                    ],
+                    [
+                      13.44,
+                      52.54
+                    ]
+                  ]
+                },
+                "units": "meters"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 19,
+            "method": "tools/call",
+            "params": {
+              "name": "measure_geometry",
+              "arguments": {
+                "operation": "length",
+                "geometry": {
+                  "type": "MultiLineString",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.41,
+                        52.52
+                      ]
+                    ],
+                    [
+                      [
+                        13.41,
+                        52.52
+                      ],
+                      [
+                        13.44,
+                        52.54
+                      ]
+                    ]
+                  ]
+                },
+                "units": "kilometers"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 20,
+            "method": "tools/call",
+            "params": {
+              "name": "measure_geometry",
+              "arguments": {
+                "operation": "bbox",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                },
+                "recompute": true
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 21,
+            "method": "tools/call",
+            "params": {
+              "name": "measure_geometry",
+              "arguments": {
+                "operation": "nearest_point_on_line",
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [
+                    13.405,
+                    52.52
+                  ]
+                },
+                "other_geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [
+                      13.38,
+                      52.5
+                    ],
+                    [
+                      13.41,
+                      52.53
+                    ],
+                    [
+                      13.44,
+                      52.54
+                    ]
+                  ]
+                },
+                "units": "meters"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 22,
+            "method": "tools/call",
+            "params": {
+              "name": "measure_geometry",
+              "arguments": {
+                "operation": "point_to_line_distance",
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [
+                    13.405,
+                    52.52
+                  ]
+                },
+                "other_geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [
+                      13.38,
+                      52.5
+                    ],
+                    [
+                      13.41,
+                      52.53
+                    ],
+                    [
+                      13.44,
+                      52.54
+                    ]
+                  ]
+                },
+                "units": "meters"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 23,
+            "method": "tools/call",
+            "params": {
+              "name": "measure_geometry",
+              "arguments": {
+                "operation": "point_to_polygon_distance",
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [
+                    13.45,
+                    52.56
+                  ]
+                },
+                "other_geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                },
+                "units": "meters"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 24,
+            "method": "tools/call",
+            "params": {
+              "name": "measure_geometry",
+              "arguments": {
+                "operation": "along",
+                "geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [
+                      13.38,
+                      52.5
+                    ],
+                    [
+                      13.41,
+                      52.53
+                    ],
+                    [
+                      13.44,
+                      52.54
+                    ]
+                  ]
+                },
+                "distance": 2,
+                "units": "kilometers"
+              }
+            }
+          }
+        ],
+        "x-geoapify-mcp-tool": "measure_geometry",
+        "x-geoapify-mcp-category": "Utilities",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/MeasureGeometryInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/MeasureGeometryOutput",
+        "x-geoapify-mcp-operations": [
+          {
+            "name": "area",
+            "description": "Calculate Polygon or MultiPolygon area in square meters.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryAreaInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryAreaOutput"
+            }
+          },
+          {
+            "name": "distance",
+            "description": "Calculate the distance between two points.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryDistanceInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryDistanceOutput"
+            }
+          },
+          {
+            "name": "length",
+            "description": "Calculate LineString or MultiLineString length.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryLengthInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryLengthOutput"
+            }
+          },
+          {
+            "name": "bbox",
+            "description": "Calculate a rectangular bounding-box Feature.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryBboxInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryBboxOutput"
+            }
+          },
+          {
+            "name": "point_to_line_distance",
+            "description": "Calculate the shortest distance from a point to a line.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryPointToLineDistanceInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryPointToLineDistanceOutput"
+            }
+          },
+          {
+            "name": "point_to_polygon_distance",
+            "description": "Calculate the shortest distance from a point to a polygon boundary.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryPointToPolygonDistanceInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryPointToPolygonDistanceOutput"
+            }
+          },
+          {
+            "name": "nearest_point_on_line",
+            "description": "Return the nearest point on a line to the supplied point.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryNearestPointOnLineInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryNearestPointOnLineOutput"
+            }
+          },
+          {
+            "name": "along",
+            "description": "Return the point at a distance from the start of a LineString.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryAlongInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/MeasureGeometryAlongOutput"
+            }
+          }
+        ]
+      },
+      "MeasureGeometryToolCallSuccessResponse": {
+        "type": "object",
+        "description": "Successful JSON-RPC response with tool-specific structured content.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "structuredContent",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "JSON text representation of structuredContent.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded copy of structuredContent."
+                    }
+                  }
+                }
+              },
+              "structuredContent": {
+                "$ref": "#/components/schemas/MeasureGeometryOutput"
+              },
+              "isError": {
+                "const": false
+              }
+            }
+          }
+        }
+      },
+      "ToolCallErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC tools/call response when tool execution fails.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "Tool error details represented as JSON text.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded GatewayError with statusCode, error, and message fields."
+                    }
+                  }
+                }
+              },
+              "isError": {
+                "const": true
+              }
+            }
+          }
+        }
+      },
+      "MeasureGeometryToolCallResponse": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/MeasureGeometryToolCallSuccessResponse"
+          },
+          {
+            "$ref": "#/components/schemas/ToolCallErrorResponse"
+          },
+          {
+            "$ref": "#/components/schemas/JsonRpcErrorResponse"
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyInHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Geoapify API key header. Recommended authentication method for MCP clients."
+      }
+    }
+  },
+  "x-geoapify-mcp-tool-index": "index.json",
+  "security": [
+    {
+      "ApiKeyInHeader": []
+    }
+  ]
+}

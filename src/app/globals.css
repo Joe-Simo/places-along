@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f6f5f1;
+  --card: #ffffff;
+  --ink: #1d1c1a;
+  --mute: #6d6a63;
+  --line: #e3e0d8;
+  --road: #2f6b4f;
+  --agent: #4054b2;
+  --direct: #2f6b4f;
+  --warn: #9a5b13;
+  --warn-bg: #fbf1e2;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-mute: var(--mute);
+  --color-line: var(--line);
+  --color-road: var(--road);
+  --color-agent: var(--agent);
+  --color-direct: var(--direct);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html { color-scheme: light; }
+body { background: var(--paper); color: var(--ink); }
+::selection { background: #d9e8df; }
+
+.prose-doc { line-height: 1.7; }
+.prose-doc h1 { font-size: 2rem; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 1rem; }
+.prose-doc h2 { font-size: 1.35rem; font-weight: 600; margin: 2.5rem 0 0.75rem; letter-spacing: -0.01em; }
+.prose-doc h3 { font-size: 1.05rem; font-weight: 600; margin: 1.75rem 0 0.5rem; }
+.prose-doc p, .prose-doc ul, .prose-doc ol { margin: 0 0 1rem; }
+.prose-doc ul { list-style: disc; padding-left: 1.4rem; }
+.prose-doc ol { list-style: decimal; padding-left: 1.4rem; }
+.prose-doc li { margin: 0.25rem 0; }
+.prose-doc a { color: var(--road); text-decoration: underline; text-underline-offset: 3px; }
+.prose-doc code { font-family: var(--font-geist-mono); font-size: 0.88em; background: #eceae4; padding: 0.1em 0.35em; border-radius: 4px; }
+.prose-doc pre { background: #1d1c1a; color: #f1efe9; padding: 1rem 1.1rem; border-radius: 10px; overflow-x: auto; margin: 0 0 1.25rem; font-size: 0.85rem; line-height: 1.55; }
+.prose-doc pre code { background: none; padding: 0; color: inherit; }
+.prose-doc table { border-collapse: collapse; margin: 0 0 1.25rem; font-size: 0.92rem; display: block; overflow-x: auto; }
+.prose-doc th, .prose-doc td { border: 1px solid var(--line); padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+.prose-doc blockquote { border-left: 3px solid var(--line); padding-left: 1rem; color: var(--mute); margin: 0 0 1rem; }

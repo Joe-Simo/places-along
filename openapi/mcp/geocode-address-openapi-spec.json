@@ -1,0 +1,837 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Geoapify MCP Tool: Geocoding: Geocode Address",
+    "version": "1.1.2",
+    "description": "AI-focused, tool-specific OpenAPI specification for geocode_address over the Geoapify JSON-RPC transport. Import this specification when an integration needs this tool without the full MCP catalog.",
+    "contact": {
+      "name": "Geoapify",
+      "url": "https://geoapify.com",
+      "email": "info@geoapify.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.geoapify.com/v1",
+      "description": "Default API endpoint."
+    },
+    {
+      "url": "https://api-eu.geoapify.com/v1",
+      "description": "EU-focused endpoint. Geoapify service processing uses EU infrastructure."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Geocoding",
+      "description": "Geocoding MCP tools."
+    }
+  ],
+  "paths": {
+    "/mcp": {
+      "post": {
+        "tags": [
+          "Geocoding"
+        ],
+        "operationId": "callGeocodeAddress",
+        "summary": "Geocoding: Geocode Address",
+        "description": "Use this tool when the input is one free-text address, landmark, city, or place query and coordinates are needed. Use geocode_structured_address when address components are already separated, or reverse_geocode_coordinates when the input is coordinates.",
+        "parameters": [
+          {
+            "name": "MCP-Protocol-Version",
+            "in": "header",
+            "required": false,
+            "description": "Optional protocol version. Defaults to 2025-06-18 when omitted; explicitly unsupported versions are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2025-06-18"
+              ]
+            },
+            "example": "2025-06-18"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeocodeAddressToolCallRequest"
+              },
+              "examples": {
+                "geocodeAddressBerlin": {
+                  "summary": "Geocode a city name",
+                  "description": "Convert a free-text address or place query into coordinates and structured address data.",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "geocode_address",
+                      "arguments": {
+                        "query": "Berlin",
+                        "limit": 1,
+                        "lang": "en"
+                      }
+                    }
+                  }
+                },
+                "geocodeAddressStreet": {
+                  "summary": "Geocode a complete street address",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 2,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "geocode_address",
+                      "arguments": {
+                        "query": "200 Larkin Street, San Francisco, CA 94102",
+                        "country_codes": [
+                          "us"
+                        ],
+                        "limit": 3,
+                        "lang": "en"
+                      }
+                    }
+                  }
+                },
+                "geocodeAddressLandmark": {
+                  "summary": "Geocode a landmark in French",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 3,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "geocode_address",
+                      "arguments": {
+                        "query": "Tour Eiffel, Paris",
+                        "country_codes": [
+                          "fr"
+                        ],
+                        "limit": 1,
+                        "lang": "fr"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC response for the geocode_address MCP tool. Tool execution and validation failures also use HTTP 200 with result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeocodeAddressToolCallResponse"
+                },
+                "examples": {
+                  "geocodeAddressSuccess": {
+                    "summary": "Geocode address result",
+                    "description": "Live response for the geocodeAddressBerlin request example.",
+                    "value": {
+                      "jsonrpc": "2.0",
+                      "id": 1,
+                      "result": {
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "{\n  \"query\": \"Berlin\",\n  \"count\": 1,\n  \"results\": [\n    {\n      \"formatted\": \"Berlin Mountain, Berlin, NY, United States of America\",\n      \"address_line1\": \"Berlin Mountain\",\n      \"address_line2\": \"Berlin, NY, United States of America\",\n      \"lon\": -73.2862195,\n      \"lat\": 42.6920245,\n      \"place_id\": \"518ffe976b515252c059f0c3414294584540f00103f901f7c04f1500000000c0020192030f4265726c696e204d6f756e7461696e\",\n      \"result_type\": \"amenity\",\n      \"rank\": {\n        \"popularity\": 2.1667100707167255,\n        \"confidence\": 1,\n        \"match_type\": \"full_match\"\n      },\n      \"confidence\": 1,\n      \"city\": \"Town of Berlin\",\n      \"county\": \"Rensselaer County\",\n      \"state\": \"New York\",\n      \"country\": \"United States\",\n      \"country_code\": \"us\",\n      \"timezone\": {\n        \"name\": \"America/New_York\",\n        \"offset_STD\": \"-05:00\",\n        \"offset_DST\": \"-04:00\",\n        \"offset_STD_seconds\": -18000,\n        \"offset_DST_seconds\": -14400,\n        \"abbreviation_STD\": \"EST\",\n        \"abbreviation_DST\": \"EDT\"\n      },\n      \"bbox\": {\n        \"lon1\": -73.2862195,\n        \"lat1\": 42.6920245,\n        \"lon2\": -73.2862195,\n        \"lat2\": 42.6920245\n      }\n    }\n  ]\n}"
+                          }
+                        ],
+                        "structuredContent": {
+                          "query": "Berlin",
+                          "count": 1,
+                          "results": [
+                            {
+                              "formatted": "Berlin Mountain, Berlin, NY, United States of America",
+                              "address_line1": "Berlin Mountain",
+                              "address_line2": "Berlin, NY, United States of America",
+                              "lon": -73.2862195,
+                              "lat": 42.6920245,
+                              "place_id": "518ffe976b515252c059f0c3414294584540f00103f901f7c04f1500000000c0020192030f4265726c696e204d6f756e7461696e",
+                              "result_type": "amenity",
+                              "rank": {
+                                "popularity": 2.1667100707167255,
+                                "confidence": 1,
+                                "match_type": "full_match"
+                              },
+                              "confidence": 1,
+                              "city": "Town of Berlin",
+                              "county": "Rensselaer County",
+                              "state": "New York",
+                              "country": "United States",
+                              "country_code": "us",
+                              "timezone": {
+                                "name": "America/New_York",
+                                "offset_STD": "-05:00",
+                                "offset_DST": "-04:00",
+                                "offset_STD_seconds": -18000,
+                                "offset_DST_seconds": -14400,
+                                "abbreviation_STD": "EST",
+                                "abbreviation_DST": "EDT"
+                              },
+                              "bbox": {
+                                "lon1": -73.2862195,
+                                "lat1": 42.6920245,
+                                "lon2": -73.2862195,
+                                "lat2": 42.6920245
+                              }
+                            }
+                          ]
+                        },
+                        "isError": false
+                      }
+                    }
+                  },
+                  "geocodeAddressValidationError": {
+                    "summary": "Tool validation failure",
+                    "description": "Tool argument errors are MCP results with HTTP 200 and isError set to true.",
+                    "value": {
+                      "jsonrpc": "2.0",
+                      "id": 1,
+                      "result": {
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "{\"statusCode\":400,\"error\":\"Bad Request\",\"message\":\"\\\"query\\\" is required\"}"
+                          }
+                        ],
+                        "isError": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid HTTP request or unsupported MCP protocol version. Tool validation errors are returned with HTTP 200 and result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "error": "Bad Request",
+                  "message": "MCP-Protocol-Version header must be \"2025-06-18\""
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Geoapify API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "error": "Unauthorized",
+                  "message": "Invalid apiKey"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or quota exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "error": "Too Many Requests",
+                  "message": "Quota exceeded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal gateway error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "error": "Internal Server Error",
+                  "message": "Request failed, please try again later"
+                }
+              }
+            }
+          }
+        },
+        "x-geoapify-mcp-tool": "geocode_address",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/GeocodeAddressInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/GeocodeAddressOutput"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JsonRpcId": {
+        "description": "JSON-RPC request identifier. The server echoes this value in the response.",
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "JsonRpcError": {
+        "type": "object",
+        "description": "JSON-RPC error object.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "JSON-RPC error code, such as -32600 for an invalid request, -32601 for an unknown method, or -32602 for invalid parameters."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable JSON-RPC error message."
+          },
+          "data": {
+            "description": "Optional machine-readable error details."
+          }
+        }
+      },
+      "JsonRpcErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC error response returned for invalid requests or unknown methods.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "error"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "error": {
+            "$ref": "#/components/schemas/JsonRpcError"
+          }
+        }
+      },
+      "GatewayError": {
+        "type": "object",
+        "description": "HTTP gateway error returned before or outside JSON-RPC tool execution.",
+        "required": [
+          "statusCode",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code."
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP error name."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message."
+          }
+        }
+      },
+      "GeocodeAddressInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "description": "Street address or free-text location query to geocode."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 5,
+            "description": "Maximum number of results to return."
+          },
+          "lang": {
+            "type": "string",
+            "default": "en",
+            "description": "Result language as a supported two-letter language code."
+          },
+          "country_codes": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional ISO 3166-1 alpha-2 country code filters, for example \"de\" or \"us\". Values are case-insensitive and normalized to lowercase."
+          }
+        }
+      },
+      "GeocodeAddressOutput": {
+        "type": "object",
+        "description": "Compact geocoding result for a free-text query.",
+        "required": [
+          "query",
+          "count",
+          "results"
+        ],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Normalized query supplied to the tool."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of results returned."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "Compact MCP projection of a public Geoapify geocoding result.",
+              "properties": {
+                "formatted": {
+                  "type": "string",
+                  "description": "Complete formatted address."
+                },
+                "address_line1": {
+                  "type": "string",
+                  "description": "Primary address line."
+                },
+                "address_line2": {
+                  "type": "string",
+                  "description": "Secondary address line."
+                },
+                "lon": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180,
+                  "description": "Longitude in decimal degrees."
+                },
+                "lat": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90,
+                  "description": "Latitude in decimal degrees."
+                },
+                "place_id": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 2048,
+                  "description": "Stable Geoapify place identifier."
+                },
+                "result_type": {
+                  "type": "string",
+                  "enum": [
+                    "unknown",
+                    "amenity_name",
+                    "amenity",
+                    "building",
+                    "street",
+                    "postcode",
+                    "suburb",
+                    "district",
+                    "city",
+                    "county",
+                    "state",
+                    "country"
+                  ],
+                  "description": "Granularity of the matched result."
+                },
+                "rank": {
+                  "type": "object",
+                  "description": "Match quality, confidence, importance, and popularity metadata.",
+                  "properties": {
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "confidence_city_level": {
+                      "type": "number"
+                    },
+                    "confidence_street_level": {
+                      "type": "number"
+                    },
+                    "confidence_building_level": {
+                      "type": "number"
+                    },
+                    "match_type": {
+                      "type": "string",
+                      "enum": [
+                        "full_match",
+                        "inner_part",
+                        "match_by_building",
+                        "match_by_street",
+                        "match_by_postcode",
+                        "match_by_city_or_disrict",
+                        "match_by_country_or_state"
+                      ]
+                    },
+                    "importance": {
+                      "type": "number"
+                    },
+                    "popularity": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "confidence": {
+                  "type": "number",
+                  "description": "Confidence score copied from rank.confidence."
+                },
+                "housenumber": {
+                  "type": "string"
+                },
+                "street": {
+                  "type": "string"
+                },
+                "postcode": {
+                  "type": "string"
+                },
+                "city": {
+                  "type": "string"
+                },
+                "county": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                },
+                "country": {
+                  "type": "string"
+                },
+                "country_code": {
+                  "type": "string"
+                },
+                "timezone": {
+                  "type": "object",
+                  "description": "Timezone information for the result location.",
+                  "required": [
+                    "name",
+                    "offset_STD",
+                    "offset_DST",
+                    "offset_STD_seconds",
+                    "offset_DST_seconds"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "name_alt": {
+                      "type": "string"
+                    },
+                    "country_codes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "offset_STD": {
+                      "type": "string"
+                    },
+                    "offset_DST": {
+                      "type": "string"
+                    },
+                    "offset_STD_seconds": {
+                      "type": "number"
+                    },
+                    "offset_DST_seconds": {
+                      "type": "number"
+                    },
+                    "abbreviation_STD": {
+                      "type": "string"
+                    },
+                    "abbreviation_DST": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "bbox": {
+                  "type": "object",
+                  "description": "Result bounding box in WGS84 longitude/latitude coordinates.",
+                  "required": [
+                    "lon1",
+                    "lat1",
+                    "lon2",
+                    "lat2"
+                  ],
+                  "properties": {
+                    "lon1": {
+                      "type": "number",
+                      "minimum": -180,
+                      "maximum": 180
+                    },
+                    "lat1": {
+                      "type": "number",
+                      "minimum": -90,
+                      "maximum": 90
+                    },
+                    "lon2": {
+                      "type": "number",
+                      "minimum": -180,
+                      "maximum": 180
+                    },
+                    "lat2": {
+                      "type": "number",
+                      "minimum": -90,
+                      "maximum": 90
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Geocoding results ordered by relevance."
+          }
+        }
+      },
+      "GeocodeAddressToolCallParams": {
+        "type": "object",
+        "description": "MCP tools/call params for geocode_address.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "arguments"
+        ],
+        "properties": {
+          "name": {
+            "description": "Registered MCP tool name.",
+            "const": "geocode_address"
+          },
+          "arguments": {
+            "description": "Arguments validated by the geocode_address input schema.",
+            "$ref": "#/components/schemas/GeocodeAddressInput"
+          }
+        }
+      },
+      "GeocodeAddressToolCallRequest": {
+        "type": "object",
+        "description": "JSON-RPC tools/call request for the geocode_address MCP tool.",
+        "additionalProperties": false,
+        "required": [
+          "jsonrpc",
+          "id",
+          "method",
+          "params"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "description": "JSON-RPC protocol version.",
+            "const": "2.0"
+          },
+          "id": {
+            "description": "Client-supplied JSON-RPC request id echoed in the response.",
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "method": {
+            "description": "MCP method used to call a tool.",
+            "const": "tools/call"
+          },
+          "params": {
+            "description": "Tool call parameters for geocode_address.",
+            "$ref": "#/components/schemas/GeocodeAddressToolCallParams"
+          }
+        },
+        "examples": [
+          {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/call",
+            "params": {
+              "name": "geocode_address",
+              "arguments": {
+                "query": "Berlin",
+                "limit": 1,
+                "lang": "en"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {
+              "name": "geocode_address",
+              "arguments": {
+                "query": "200 Larkin Street, San Francisco, CA 94102",
+                "country_codes": [
+                  "us"
+                ],
+                "limit": 3,
+                "lang": "en"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "tools/call",
+            "params": {
+              "name": "geocode_address",
+              "arguments": {
+                "query": "Tour Eiffel, Paris",
+                "country_codes": [
+                  "fr"
+                ],
+                "limit": 1,
+                "lang": "fr"
+              }
+            }
+          }
+        ],
+        "x-geoapify-mcp-tool": "geocode_address",
+        "x-geoapify-mcp-category": "Geocoding",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/GeocodeAddressInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/GeocodeAddressOutput"
+      },
+      "GeocodeAddressToolCallSuccessResponse": {
+        "type": "object",
+        "description": "Successful JSON-RPC response with tool-specific structured content.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "structuredContent",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "JSON text representation of structuredContent.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded copy of structuredContent."
+                    }
+                  }
+                }
+              },
+              "structuredContent": {
+                "$ref": "#/components/schemas/GeocodeAddressOutput"
+              },
+              "isError": {
+                "const": false
+              }
+            }
+          }
+        }
+      },
+      "ToolCallErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC tools/call response when tool execution fails.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "Tool error details represented as JSON text.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded GatewayError with statusCode, error, and message fields."
+                    }
+                  }
+                }
+              },
+              "isError": {
+                "const": true
+              }
+            }
+          }
+        }
+      },
+      "GeocodeAddressToolCallResponse": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/GeocodeAddressToolCallSuccessResponse"
+          },
+          {
+            "$ref": "#/components/schemas/ToolCallErrorResponse"
+          },
+          {
+            "$ref": "#/components/schemas/JsonRpcErrorResponse"
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyInHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Geoapify API key header. Recommended authentication method for MCP clients."
+      }
+    }
+  },
+  "x-geoapify-mcp-tool-index": "index.json",
+  "security": [
+    {
+      "ApiKeyInHeader": []
+    }
+  ]
+}

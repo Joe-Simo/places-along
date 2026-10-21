@@ -1,0 +1,880 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Geoapify MCP Tool: Geocoding: Reverse Geocode Coordinates",
+    "version": "1.1.2",
+    "description": "AI-focused, tool-specific OpenAPI specification for reverse_geocode_coordinates over the Geoapify JSON-RPC transport. Import this specification when an integration needs this tool without the full MCP catalog.",
+    "contact": {
+      "name": "Geoapify",
+      "url": "https://geoapify.com",
+      "email": "info@geoapify.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.geoapify.com/v1",
+      "description": "Default API endpoint."
+    },
+    {
+      "url": "https://api-eu.geoapify.com/v1",
+      "description": "EU-focused endpoint. Geoapify service processing uses EU infrastructure."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Geocoding",
+      "description": "Geocoding MCP tools."
+    }
+  ],
+  "paths": {
+    "/mcp": {
+      "post": {
+        "tags": [
+          "Geocoding"
+        ],
+        "operationId": "callReverseGeocodeCoordinates",
+        "summary": "Geocoding: Reverse Geocode Coordinates",
+        "description": "Use this tool when latitude and longitude are known and a nearby address or place is needed. Use geocode_address or geocode_structured_address when the input is address text.",
+        "parameters": [
+          {
+            "name": "MCP-Protocol-Version",
+            "in": "header",
+            "required": false,
+            "description": "Optional protocol version. Defaults to 2025-06-18 when omitted; explicitly unsupported versions are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2025-06-18"
+              ]
+            },
+            "example": "2025-06-18"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReverseGeocodeCoordinatesToolCallRequest"
+              },
+              "examples": {
+                "reverseGeocodeBerlin": {
+                  "summary": "Reverse geocode a coordinate",
+                  "description": "Convert latitude and longitude coordinates into nearby address or place data.",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "reverse_geocode_coordinates",
+                      "arguments": {
+                        "lat": 52.52,
+                        "lon": 13.405,
+                        "limit": 1,
+                        "lang": "en"
+                      }
+                    }
+                  }
+                },
+                "reverseGeocodeBuilding": {
+                  "summary": "Find the building at a coordinate",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 2,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "reverse_geocode_coordinates",
+                      "arguments": {
+                        "lat": 42.365344,
+                        "lon": -71.052655,
+                        "type": "building",
+                        "country_codes": [
+                          "us"
+                        ],
+                        "limit": 1,
+                        "lang": "en"
+                      }
+                    }
+                  }
+                },
+                "reverseGeocodeCity": {
+                  "summary": "Resolve a coordinate to its city",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 3,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "reverse_geocode_coordinates",
+                      "arguments": {
+                        "lat": 48.8566,
+                        "lon": 2.3522,
+                        "type": "city",
+                        "country_codes": [
+                          "fr"
+                        ],
+                        "limit": 1,
+                        "lang": "fr"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC response for the reverse_geocode_coordinates MCP tool. Tool execution and validation failures also use HTTP 200 with result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReverseGeocodeCoordinatesToolCallResponse"
+                },
+                "examples": {
+                  "reverseGeocodeCoordinatesSuccess": {
+                    "summary": "Reverse geocoding result",
+                    "description": "Live response for the reverseGeocodeBerlin request example.",
+                    "value": {
+                      "jsonrpc": "2.0",
+                      "id": 1,
+                      "result": {
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "{\n  \"coordinates\": {\n    \"lat\": 52.52,\n    \"lon\": 13.405\n  },\n  \"count\": 1,\n  \"results\": [\n    {\n      \"formatted\": \"Nordsee, Spandauer Straße 4, 10178 Berlin, Germany\",\n      \"address_line1\": \"Nordsee\",\n      \"address_line2\": \"Spandauer Straße 4, 10178 Berlin, Germany\",\n      \"lon\": 13.4049136,\n      \"lat\": 52.5204075,\n      \"place_id\": \"514869dbd550cf2a4059eb8b84b69c424a40f00103f901726b151a00000000c002019203074e6f7264736565e203226f70656e7374726565746d61703a76656e75653a6e6f64652f343337363131333738\",\n      \"result_type\": \"amenity\",\n      \"rank\": {\n        \"importance\": 0.00008875486381318407,\n        \"popularity\": 8.995467104553104\n      },\n      \"housenumber\": \"4\",\n      \"street\": \"Spandauer Straße\",\n      \"postcode\": \"10178\",\n      \"city\": \"Berlin\",\n      \"state\": \"Berlin\",\n      \"country\": \"Germany\",\n      \"country_code\": \"de\",\n      \"timezone\": {\n        \"name\": \"Europe/Berlin\",\n        \"offset_STD\": \"+01:00\",\n        \"offset_DST\": \"+02:00\",\n        \"offset_STD_seconds\": 3600,\n        \"offset_DST_seconds\": 7200,\n        \"abbreviation_STD\": \"CET\",\n        \"abbreviation_DST\": \"CEST\"\n      },\n      \"bbox\": {\n        \"lon1\": 13.4048636,\n        \"lat1\": 52.5203575,\n        \"lon2\": 13.4049636,\n        \"lat2\": 52.5204575\n      }\n    }\n  ]\n}"
+                          }
+                        ],
+                        "structuredContent": {
+                          "coordinates": {
+                            "lat": 52.52,
+                            "lon": 13.405
+                          },
+                          "count": 1,
+                          "results": [
+                            {
+                              "formatted": "Nordsee, Spandauer Straße 4, 10178 Berlin, Germany",
+                              "address_line1": "Nordsee",
+                              "address_line2": "Spandauer Straße 4, 10178 Berlin, Germany",
+                              "lon": 13.4049136,
+                              "lat": 52.5204075,
+                              "place_id": "514869dbd550cf2a4059eb8b84b69c424a40f00103f901726b151a00000000c002019203074e6f7264736565e203226f70656e7374726565746d61703a76656e75653a6e6f64652f343337363131333738",
+                              "result_type": "amenity",
+                              "rank": {
+                                "importance": 0.00008875486381318407,
+                                "popularity": 8.995467104553104
+                              },
+                              "housenumber": "4",
+                              "street": "Spandauer Straße",
+                              "postcode": "10178",
+                              "city": "Berlin",
+                              "state": "Berlin",
+                              "country": "Germany",
+                              "country_code": "de",
+                              "timezone": {
+                                "name": "Europe/Berlin",
+                                "offset_STD": "+01:00",
+                                "offset_DST": "+02:00",
+                                "offset_STD_seconds": 3600,
+                                "offset_DST_seconds": 7200,
+                                "abbreviation_STD": "CET",
+                                "abbreviation_DST": "CEST"
+                              },
+                              "bbox": {
+                                "lon1": 13.4048636,
+                                "lat1": 52.5203575,
+                                "lon2": 13.4049636,
+                                "lat2": 52.5204575
+                              }
+                            }
+                          ]
+                        },
+                        "isError": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid HTTP request or unsupported MCP protocol version. Tool validation errors are returned with HTTP 200 and result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "error": "Bad Request",
+                  "message": "MCP-Protocol-Version header must be \"2025-06-18\""
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Geoapify API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "error": "Unauthorized",
+                  "message": "Invalid apiKey"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or quota exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "error": "Too Many Requests",
+                  "message": "Quota exceeded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal gateway error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "error": "Internal Server Error",
+                  "message": "Request failed, please try again later"
+                }
+              }
+            }
+          }
+        },
+        "x-geoapify-mcp-tool": "reverse_geocode_coordinates",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/ReverseGeocodeCoordinatesInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/ReverseGeocodeCoordinatesOutput"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JsonRpcId": {
+        "description": "JSON-RPC request identifier. The server echoes this value in the response.",
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "JsonRpcError": {
+        "type": "object",
+        "description": "JSON-RPC error object.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "JSON-RPC error code, such as -32600 for an invalid request, -32601 for an unknown method, or -32602 for invalid parameters."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable JSON-RPC error message."
+          },
+          "data": {
+            "description": "Optional machine-readable error details."
+          }
+        }
+      },
+      "JsonRpcErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC error response returned for invalid requests or unknown methods.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "error"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "error": {
+            "$ref": "#/components/schemas/JsonRpcError"
+          }
+        }
+      },
+      "GatewayError": {
+        "type": "object",
+        "description": "HTTP gateway error returned before or outside JSON-RPC tool execution.",
+        "required": [
+          "statusCode",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code."
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP error name."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message."
+          }
+        }
+      },
+      "ReverseGeocodeCoordinatesInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Latitude of the coordinate to reverse geocode."
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Longitude of the coordinate to reverse geocode."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 1,
+            "description": "Maximum number of nearby address or place results to return."
+          },
+          "lang": {
+            "type": "string",
+            "default": "en",
+            "description": "Result language as a supported two-letter language code."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "country",
+              "state",
+              "city",
+              "postcode",
+              "street",
+              "amenity",
+              "locality",
+              "building"
+            ],
+            "description": "Optional result granularity, for example building for address-level results, city for city-level results, or postcode for postal-code results."
+          },
+          "country_codes": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional ISO 3166-1 alpha-2 country code filters, for example \"de\" or \"us\". Values are case-insensitive and normalized to lowercase."
+          }
+        }
+      },
+      "ReverseGeocodeCoordinatesOutput": {
+        "type": "object",
+        "description": "Compact reverse-geocoding result for one coordinate.",
+        "required": [
+          "coordinates",
+          "count",
+          "results"
+        ],
+        "properties": {
+          "coordinates": {
+            "type": "object",
+            "description": "Input coordinate in latitude/longitude form.",
+            "required": [
+              "lat",
+              "lon"
+            ],
+            "properties": {
+              "lat": {
+                "type": "number"
+              },
+              "lon": {
+                "type": "number"
+              }
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "country",
+              "state",
+              "city",
+              "postcode",
+              "street",
+              "amenity",
+              "locality",
+              "building"
+            ],
+            "description": "Requested result granularity when supplied."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of results returned."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "Compact MCP projection of a public Geoapify geocoding result.",
+              "properties": {
+                "formatted": {
+                  "type": "string",
+                  "description": "Complete formatted address."
+                },
+                "address_line1": {
+                  "type": "string",
+                  "description": "Primary address line."
+                },
+                "address_line2": {
+                  "type": "string",
+                  "description": "Secondary address line."
+                },
+                "lon": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180,
+                  "description": "Longitude in decimal degrees."
+                },
+                "lat": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90,
+                  "description": "Latitude in decimal degrees."
+                },
+                "place_id": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 2048,
+                  "description": "Stable Geoapify place identifier."
+                },
+                "result_type": {
+                  "type": "string",
+                  "enum": [
+                    "unknown",
+                    "amenity_name",
+                    "amenity",
+                    "building",
+                    "street",
+                    "postcode",
+                    "suburb",
+                    "district",
+                    "city",
+                    "county",
+                    "state",
+                    "country"
+                  ],
+                  "description": "Granularity of the matched result."
+                },
+                "rank": {
+                  "type": "object",
+                  "description": "Match quality, confidence, importance, and popularity metadata.",
+                  "properties": {
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "confidence_city_level": {
+                      "type": "number"
+                    },
+                    "confidence_street_level": {
+                      "type": "number"
+                    },
+                    "confidence_building_level": {
+                      "type": "number"
+                    },
+                    "match_type": {
+                      "type": "string",
+                      "enum": [
+                        "full_match",
+                        "inner_part",
+                        "match_by_building",
+                        "match_by_street",
+                        "match_by_postcode",
+                        "match_by_city_or_disrict",
+                        "match_by_country_or_state"
+                      ]
+                    },
+                    "importance": {
+                      "type": "number"
+                    },
+                    "popularity": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "confidence": {
+                  "type": "number",
+                  "description": "Confidence score copied from rank.confidence."
+                },
+                "housenumber": {
+                  "type": "string"
+                },
+                "street": {
+                  "type": "string"
+                },
+                "postcode": {
+                  "type": "string"
+                },
+                "city": {
+                  "type": "string"
+                },
+                "county": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                },
+                "country": {
+                  "type": "string"
+                },
+                "country_code": {
+                  "type": "string"
+                },
+                "timezone": {
+                  "type": "object",
+                  "description": "Timezone information for the result location.",
+                  "required": [
+                    "name",
+                    "offset_STD",
+                    "offset_DST",
+                    "offset_STD_seconds",
+                    "offset_DST_seconds"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "name_alt": {
+                      "type": "string"
+                    },
+                    "country_codes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "offset_STD": {
+                      "type": "string"
+                    },
+                    "offset_DST": {
+                      "type": "string"
+                    },
+                    "offset_STD_seconds": {
+                      "type": "number"
+                    },
+                    "offset_DST_seconds": {
+                      "type": "number"
+                    },
+                    "abbreviation_STD": {
+                      "type": "string"
+                    },
+                    "abbreviation_DST": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "bbox": {
+                  "type": "object",
+                  "description": "Result bounding box in WGS84 longitude/latitude coordinates.",
+                  "required": [
+                    "lon1",
+                    "lat1",
+                    "lon2",
+                    "lat2"
+                  ],
+                  "properties": {
+                    "lon1": {
+                      "type": "number",
+                      "minimum": -180,
+                      "maximum": 180
+                    },
+                    "lat1": {
+                      "type": "number",
+                      "minimum": -90,
+                      "maximum": 90
+                    },
+                    "lon2": {
+                      "type": "number",
+                      "minimum": -180,
+                      "maximum": 180
+                    },
+                    "lat2": {
+                      "type": "number",
+                      "minimum": -90,
+                      "maximum": 90
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Nearby results ordered by relevance."
+          }
+        }
+      },
+      "ReverseGeocodeCoordinatesToolCallParams": {
+        "type": "object",
+        "description": "MCP tools/call params for reverse_geocode_coordinates.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "arguments"
+        ],
+        "properties": {
+          "name": {
+            "description": "Registered MCP tool name.",
+            "const": "reverse_geocode_coordinates"
+          },
+          "arguments": {
+            "description": "Arguments validated by the reverse_geocode_coordinates input schema.",
+            "$ref": "#/components/schemas/ReverseGeocodeCoordinatesInput"
+          }
+        }
+      },
+      "ReverseGeocodeCoordinatesToolCallRequest": {
+        "type": "object",
+        "description": "JSON-RPC tools/call request for the reverse_geocode_coordinates MCP tool.",
+        "additionalProperties": false,
+        "required": [
+          "jsonrpc",
+          "id",
+          "method",
+          "params"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "description": "JSON-RPC protocol version.",
+            "const": "2.0"
+          },
+          "id": {
+            "description": "Client-supplied JSON-RPC request id echoed in the response.",
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "method": {
+            "description": "MCP method used to call a tool.",
+            "const": "tools/call"
+          },
+          "params": {
+            "description": "Tool call parameters for reverse_geocode_coordinates.",
+            "$ref": "#/components/schemas/ReverseGeocodeCoordinatesToolCallParams"
+          }
+        },
+        "examples": [
+          {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/call",
+            "params": {
+              "name": "reverse_geocode_coordinates",
+              "arguments": {
+                "lat": 52.52,
+                "lon": 13.405,
+                "limit": 1,
+                "lang": "en"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {
+              "name": "reverse_geocode_coordinates",
+              "arguments": {
+                "lat": 42.365344,
+                "lon": -71.052655,
+                "type": "building",
+                "country_codes": [
+                  "us"
+                ],
+                "limit": 1,
+                "lang": "en"
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "tools/call",
+            "params": {
+              "name": "reverse_geocode_coordinates",
+              "arguments": {
+                "lat": 48.8566,
+                "lon": 2.3522,
+                "type": "city",
+                "country_codes": [
+                  "fr"
+                ],
+                "limit": 1,
+                "lang": "fr"
+              }
+            }
+          }
+        ],
+        "x-geoapify-mcp-tool": "reverse_geocode_coordinates",
+        "x-geoapify-mcp-category": "Geocoding",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/ReverseGeocodeCoordinatesInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/ReverseGeocodeCoordinatesOutput"
+      },
+      "ReverseGeocodeCoordinatesToolCallSuccessResponse": {
+        "type": "object",
+        "description": "Successful JSON-RPC response with tool-specific structured content.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "structuredContent",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "JSON text representation of structuredContent.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded copy of structuredContent."
+                    }
+                  }
+                }
+              },
+              "structuredContent": {
+                "$ref": "#/components/schemas/ReverseGeocodeCoordinatesOutput"
+              },
+              "isError": {
+                "const": false
+              }
+            }
+          }
+        }
+      },
+      "ToolCallErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC tools/call response when tool execution fails.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "Tool error details represented as JSON text.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded GatewayError with statusCode, error, and message fields."
+                    }
+                  }
+                }
+              },
+              "isError": {
+                "const": true
+              }
+            }
+          }
+        }
+      },
+      "ReverseGeocodeCoordinatesToolCallResponse": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ReverseGeocodeCoordinatesToolCallSuccessResponse"
+          },
+          {
+            "$ref": "#/components/schemas/ToolCallErrorResponse"
+          },
+          {
+            "$ref": "#/components/schemas/JsonRpcErrorResponse"
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyInHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Geoapify API key header. Recommended authentication method for MCP clients."
+      }
+    }
+  },
+  "x-geoapify-mcp-tool-index": "index.json",
+  "security": [
+    {
+      "ApiKeyInHeader": []
+    }
+  ]
+}

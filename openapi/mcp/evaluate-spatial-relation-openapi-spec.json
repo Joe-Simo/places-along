@@ -1,0 +1,1490 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Geoapify MCP Tool: Utilities: Evaluate Spatial Relation",
+    "version": "1.1.2",
+    "description": "AI-focused, tool-specific OpenAPI specification for evaluate_spatial_relation over the Geoapify JSON-RPC transport. Import this specification when an integration needs this tool without the full MCP catalog.",
+    "contact": {
+      "name": "Geoapify",
+      "url": "https://geoapify.com",
+      "email": "info@geoapify.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.geoapify.com/v1",
+      "description": "Default API endpoint."
+    },
+    {
+      "url": "https://api-eu.geoapify.com/v1",
+      "description": "EU-focused endpoint. Geoapify service processing uses EU infrastructure."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Utilities",
+      "description": "Utilities MCP tools."
+    }
+  ],
+  "paths": {
+    "/mcp": {
+      "post": {
+        "tags": [
+          "Utilities"
+        ],
+        "operationId": "callEvaluateSpatialRelation",
+        "summary": "Utilities: Evaluate Spatial Relation",
+        "description": "Use this tool when the answer should be true or false: containment, crossing, disjointness, intersection, validity, inclusion, or whether a point lies on a line. It does not modify geometries or calculate distances.\n\n## Operations\n\n### `contains`\n\nReturn true when geometry contains other_geometry.\n\n**Input**\n\n- Required: `operation` = `\"contains\"`, `geometry`, `other_geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when `geometry` contains `other_geometry`, and `false` otherwise.\n\n### `crosses`\n\nReturn true when the geometries cross one another.\n\n**Input**\n\n- Required: `operation` = `\"crosses\"`, `geometry`, `other_geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when the two geometries cross, and `false` otherwise.\n\n### `disjoint`\n\nReturn true when the geometries share no point.\n\n**Input**\n\n- Required: `operation` = `\"disjoint\"`, `geometry`, `other_geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when the two geometries share no point, and `false` otherwise.\n\n### `intersects`\n\nReturn true when the geometries share at least one point.\n\n**Input**\n\n- Required: `operation` = `\"intersects\"`, `geometry`, `other_geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when the two geometries share at least one point, and `false` otherwise.\n\n### `within`\n\nReturn true when geometry is completely within other_geometry.\n\n**Input**\n\n- Required: `operation` = `\"within\"`, `geometry`, `other_geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when `geometry` is completely within `other_geometry`, and `false` otherwise.\n\n### `valid`\n\nCheck whether one GeoJSON geometry is valid.\n\n**Input**\n\n- Required: `operation` = `\"valid\"`, `geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when `geometry` is valid, and `false` otherwise.\n\n### `point_on_line`\n\nCheck whether a point lies on a line.\n\n**Input**\n\n- Required: `operation` = `\"point_on_line\"`, `geometry`, `other_geometry`\n- Optional: none\n\n**Output**\n\nReturns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when the supplied Point lies on the supplied LineString, and `false` otherwise.",
+        "parameters": [
+          {
+            "name": "MCP-Protocol-Version",
+            "in": "header",
+            "required": false,
+            "description": "Optional protocol version. Defaults to 2025-06-18 when omitted; explicitly unsupported versions are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2025-06-18"
+              ]
+            },
+            "example": "2025-06-18"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluateSpatialRelationToolCallRequest"
+              },
+              "examples": {
+                "relationContains": {
+                  "summary": "Geometry: check whether a polygon contains a point",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 13,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "evaluate_spatial_relation",
+                      "arguments": {
+                        "operation": "contains",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        },
+                        "other_geometry": {
+                          "type": "Point",
+                          "coordinates": [
+                            13.405,
+                            52.52
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "relationIntersects": {
+                  "summary": "Geometry: check whether two polygons intersect",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 14,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "evaluate_spatial_relation",
+                      "arguments": {
+                        "operation": "intersects",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        },
+                        "other_geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.4,
+                                52.51
+                              ],
+                              [
+                                13.44,
+                                52.51
+                              ],
+                              [
+                                13.44,
+                                52.55
+                              ],
+                              [
+                                13.4,
+                                52.55
+                              ],
+                              [
+                                13.4,
+                                52.51
+                              ]
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "relationWithin": {
+                  "summary": "Geometry: check whether a point is within a polygon",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 15,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "evaluate_spatial_relation",
+                      "arguments": {
+                        "operation": "within",
+                        "geometry": {
+                          "type": "Point",
+                          "coordinates": [
+                            13.405,
+                            52.52
+                          ]
+                        },
+                        "other_geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "relationCrosses": {
+                  "summary": "Geometry: check whether two lines cross",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 16,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "evaluate_spatial_relation",
+                      "arguments": {
+                        "operation": "crosses",
+                        "geometry": {
+                          "type": "LineString",
+                          "coordinates": [
+                            [
+                              13.38,
+                              52.5
+                            ],
+                            [
+                              13.41,
+                              52.53
+                            ],
+                            [
+                              13.44,
+                              52.54
+                            ]
+                          ]
+                        },
+                        "other_geometry": {
+                          "type": "LineString",
+                          "coordinates": [
+                            [
+                              13.38,
+                              52.54
+                            ],
+                            [
+                              13.44,
+                              52.5
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "relationDisjoint": {
+                  "summary": "Geometry: check whether two geometries are disjoint",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 17,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "evaluate_spatial_relation",
+                      "arguments": {
+                        "operation": "disjoint",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        },
+                        "other_geometry": {
+                          "type": "Point",
+                          "coordinates": [
+                            13.5,
+                            52.6
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "relationValid": {
+                  "summary": "Geometry: validate a polygon",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 18,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "evaluate_spatial_relation",
+                      "arguments": {
+                        "operation": "valid",
+                        "geometry": {
+                          "type": "Polygon",
+                          "coordinates": [
+                            [
+                              [
+                                13.38,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.5
+                              ],
+                              [
+                                13.42,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.54
+                              ],
+                              [
+                                13.38,
+                                52.5
+                              ]
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "relationPointOnLine": {
+                  "summary": "Geometry: check whether a point lies on a line",
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 19,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "evaluate_spatial_relation",
+                      "arguments": {
+                        "operation": "point_on_line",
+                        "geometry": {
+                          "type": "Point",
+                          "coordinates": [
+                            13.41,
+                            52.53
+                          ]
+                        },
+                        "other_geometry": {
+                          "type": "LineString",
+                          "coordinates": [
+                            [
+                              13.38,
+                              52.5
+                            ],
+                            [
+                              13.41,
+                              52.53
+                            ],
+                            [
+                              13.44,
+                              52.54
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC response for the evaluate_spatial_relation MCP tool. Tool execution and validation failures also use HTTP 200 with result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluateSpatialRelationToolCallResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid HTTP request or unsupported MCP protocol version. Tool validation errors are returned with HTTP 200 and result.isError set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "error": "Bad Request",
+                  "message": "MCP-Protocol-Version header must be \"2025-06-18\""
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Geoapify API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "error": "Unauthorized",
+                  "message": "Invalid apiKey"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or quota exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "error": "Too Many Requests",
+                  "message": "Quota exceeded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal gateway error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "error": "Internal Server Error",
+                  "message": "Request failed, please try again later"
+                }
+              }
+            }
+          }
+        },
+        "x-geoapify-mcp-tool": "evaluate_spatial_relation",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/EvaluateSpatialRelationInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/EvaluateSpatialRelationOutput",
+        "x-geoapify-mcp-operations": [
+          {
+            "name": "contains",
+            "description": "Return true when geometry contains other_geometry.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationContainsInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationContainsOutput"
+            }
+          },
+          {
+            "name": "crosses",
+            "description": "Return true when the geometries cross one another.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationCrossesInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationCrossesOutput"
+            }
+          },
+          {
+            "name": "disjoint",
+            "description": "Return true when the geometries share no point.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationDisjointInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationDisjointOutput"
+            }
+          },
+          {
+            "name": "intersects",
+            "description": "Return true when the geometries share at least one point.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationIntersectsInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationIntersectsOutput"
+            }
+          },
+          {
+            "name": "within",
+            "description": "Return true when geometry is completely within other_geometry.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationWithinInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationWithinOutput"
+            }
+          },
+          {
+            "name": "valid",
+            "description": "Check whether one GeoJSON geometry is valid.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationValidInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationValidOutput"
+            }
+          },
+          {
+            "name": "point_on_line",
+            "description": "Check whether a point lies on a line.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationPointOnLineInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationPointOnLineOutput"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JsonRpcId": {
+        "description": "JSON-RPC request identifier. The server echoes this value in the response.",
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "JsonRpcError": {
+        "type": "object",
+        "description": "JSON-RPC error object.",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "JSON-RPC error code, such as -32600 for an invalid request, -32601 for an unknown method, or -32602 for invalid parameters."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable JSON-RPC error message."
+          },
+          "data": {
+            "description": "Optional machine-readable error details."
+          }
+        }
+      },
+      "JsonRpcErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC error response returned for invalid requests or unknown methods.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "error"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "error": {
+            "$ref": "#/components/schemas/JsonRpcError"
+          }
+        }
+      },
+      "GatewayError": {
+        "type": "object",
+        "description": "HTTP gateway error returned before or outside JSON-RPC tool execution.",
+        "required": [
+          "statusCode",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code."
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP error name."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message."
+          }
+        }
+      },
+      "EvaluateSpatialRelationContainsInput": {
+        "type": "object",
+        "title": "contains",
+        "description": "Return true when geometry contains other_geometry.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "other_geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "contains",
+            "description": "Return true when geometry contains other_geometry."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "Subject operand; GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection. Operand order is significant."
+          },
+          "other_geometry": {
+            "type": "object",
+            "description": "Comparison operand; GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "McpGeometryBooleanResult": {
+        "type": "object",
+        "description": "Typed geometry-operation result. The type value determines the data schema.",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Boolean result",
+            "required": [
+              "type",
+              "data"
+            ],
+            "properties": {
+              "type": {
+                "const": "boolean",
+                "description": "The result contains a spatial predicate outcome."
+              },
+              "data": {
+                "type": "boolean",
+                "description": "The result of the requested spatial predicate."
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "EvaluateSpatialRelationContainsOutput": {
+        "title": "contains output",
+        "description": "Returns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when `geometry` contains `other_geometry`, and `false` otherwise.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryBooleanResult"
+          }
+        ]
+      },
+      "EvaluateSpatialRelationCrossesInput": {
+        "type": "object",
+        "title": "crosses",
+        "description": "Return true when the geometries cross one another.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "other_geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "crosses",
+            "description": "Return true when the geometries cross one another."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "Subject operand; GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection. Operand order is significant."
+          },
+          "other_geometry": {
+            "type": "object",
+            "description": "Comparison operand; GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "EvaluateSpatialRelationCrossesOutput": {
+        "title": "crosses output",
+        "description": "Returns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when the two geometries cross, and `false` otherwise.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryBooleanResult"
+          }
+        ]
+      },
+      "EvaluateSpatialRelationDisjointInput": {
+        "type": "object",
+        "title": "disjoint",
+        "description": "Return true when the geometries share no point.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "other_geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "disjoint",
+            "description": "Return true when the geometries share no point."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "Subject operand; GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection. Operand order is significant."
+          },
+          "other_geometry": {
+            "type": "object",
+            "description": "Comparison operand; GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "EvaluateSpatialRelationDisjointOutput": {
+        "title": "disjoint output",
+        "description": "Returns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when the two geometries share no point, and `false` otherwise.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryBooleanResult"
+          }
+        ]
+      },
+      "EvaluateSpatialRelationIntersectsInput": {
+        "type": "object",
+        "title": "intersects",
+        "description": "Return true when the geometries share at least one point.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "other_geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "intersects",
+            "description": "Return true when the geometries share at least one point."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "Subject operand; GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection. Operand order is significant."
+          },
+          "other_geometry": {
+            "type": "object",
+            "description": "Comparison operand; GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "EvaluateSpatialRelationIntersectsOutput": {
+        "title": "intersects output",
+        "description": "Returns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when the two geometries share at least one point, and `false` otherwise.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryBooleanResult"
+          }
+        ]
+      },
+      "EvaluateSpatialRelationWithinInput": {
+        "type": "object",
+        "title": "within",
+        "description": "Return true when geometry is completely within other_geometry.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "other_geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "within",
+            "description": "Return true when geometry is completely within other_geometry."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "Subject operand; GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection. Operand order is significant."
+          },
+          "other_geometry": {
+            "type": "object",
+            "description": "Comparison operand; GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "EvaluateSpatialRelationWithinOutput": {
+        "title": "within output",
+        "description": "Returns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when `geometry` is completely within `other_geometry`, and `false` otherwise.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryBooleanResult"
+          }
+        ]
+      },
+      "EvaluateSpatialRelationValidInput": {
+        "type": "object",
+        "title": "valid",
+        "description": "Check whether one GeoJSON geometry is valid.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "valid",
+            "description": "Return true when geometry is a valid GeoJSON geometry."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "GeoJSON Geometry (Point, LineString, Polygon, MultiPoint, MultiLineString, or MultiPolygon); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "EvaluateSpatialRelationValidOutput": {
+        "title": "valid output",
+        "description": "Returns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when `geometry` is valid, and `false` otherwise.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryBooleanResult"
+          }
+        ]
+      },
+      "EvaluateSpatialRelationPointOnLineInput": {
+        "type": "object",
+        "title": "point_on_line",
+        "description": "Check whether a point lies on a line.",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "geometry",
+          "other_geometry"
+        ],
+        "properties": {
+          "operation": {
+            "const": "point_on_line",
+            "description": "Return true when the Point lies on the LineString."
+          },
+          "geometry": {
+            "type": "object",
+            "description": "Point to test; GeoJSON Geometry (Point); not a Feature or FeatureCollection."
+          },
+          "other_geometry": {
+            "type": "object",
+            "description": "Line to test against; GeoJSON Geometry (LineString); not a Feature or FeatureCollection."
+          }
+        }
+      },
+      "EvaluateSpatialRelationPointOnLineOutput": {
+        "title": "point_on_line output",
+        "description": "Returns `{ \"type\": \"boolean\", \"data\": boolean }`; `data` is `true` when the supplied Point lies on the supplied LineString, and `false` otherwise.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/McpGeometryBooleanResult"
+          }
+        ]
+      },
+      "EvaluateSpatialRelationInput": {
+        "description": "Choose one spatial predicate. The selected branch defines the required operands and geometry types.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/EvaluateSpatialRelationContainsInput"
+          },
+          {
+            "$ref": "#/components/schemas/EvaluateSpatialRelationCrossesInput"
+          },
+          {
+            "$ref": "#/components/schemas/EvaluateSpatialRelationDisjointInput"
+          },
+          {
+            "$ref": "#/components/schemas/EvaluateSpatialRelationIntersectsInput"
+          },
+          {
+            "$ref": "#/components/schemas/EvaluateSpatialRelationWithinInput"
+          },
+          {
+            "$ref": "#/components/schemas/EvaluateSpatialRelationValidInput"
+          },
+          {
+            "$ref": "#/components/schemas/EvaluateSpatialRelationPointOnLineInput"
+          }
+        ]
+      },
+      "EvaluateSpatialRelationOutput": {
+        "$ref": "#/components/schemas/McpGeometryBooleanResult"
+      },
+      "EvaluateSpatialRelationToolCallParams": {
+        "type": "object",
+        "description": "MCP tools/call params for evaluate_spatial_relation.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "arguments"
+        ],
+        "properties": {
+          "name": {
+            "description": "Registered MCP tool name.",
+            "const": "evaluate_spatial_relation"
+          },
+          "arguments": {
+            "description": "Arguments validated by the evaluate_spatial_relation input schema.",
+            "$ref": "#/components/schemas/EvaluateSpatialRelationInput"
+          }
+        }
+      },
+      "EvaluateSpatialRelationToolCallRequest": {
+        "type": "object",
+        "description": "JSON-RPC tools/call request for the evaluate_spatial_relation MCP tool.",
+        "additionalProperties": false,
+        "required": [
+          "jsonrpc",
+          "id",
+          "method",
+          "params"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "description": "JSON-RPC protocol version.",
+            "const": "2.0"
+          },
+          "id": {
+            "description": "Client-supplied JSON-RPC request id echoed in the response.",
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "method": {
+            "description": "MCP method used to call a tool.",
+            "const": "tools/call"
+          },
+          "params": {
+            "description": "Tool call parameters for evaluate_spatial_relation.",
+            "$ref": "#/components/schemas/EvaluateSpatialRelationToolCallParams"
+          }
+        },
+        "examples": [
+          {
+            "jsonrpc": "2.0",
+            "id": 13,
+            "method": "tools/call",
+            "params": {
+              "name": "evaluate_spatial_relation",
+              "arguments": {
+                "operation": "contains",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                },
+                "other_geometry": {
+                  "type": "Point",
+                  "coordinates": [
+                    13.405,
+                    52.52
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 14,
+            "method": "tools/call",
+            "params": {
+              "name": "evaluate_spatial_relation",
+              "arguments": {
+                "operation": "intersects",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                },
+                "other_geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.4,
+                        52.51
+                      ],
+                      [
+                        13.44,
+                        52.51
+                      ],
+                      [
+                        13.44,
+                        52.55
+                      ],
+                      [
+                        13.4,
+                        52.55
+                      ],
+                      [
+                        13.4,
+                        52.51
+                      ]
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 15,
+            "method": "tools/call",
+            "params": {
+              "name": "evaluate_spatial_relation",
+              "arguments": {
+                "operation": "within",
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [
+                    13.405,
+                    52.52
+                  ]
+                },
+                "other_geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 16,
+            "method": "tools/call",
+            "params": {
+              "name": "evaluate_spatial_relation",
+              "arguments": {
+                "operation": "crosses",
+                "geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [
+                      13.38,
+                      52.5
+                    ],
+                    [
+                      13.41,
+                      52.53
+                    ],
+                    [
+                      13.44,
+                      52.54
+                    ]
+                  ]
+                },
+                "other_geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [
+                      13.38,
+                      52.54
+                    ],
+                    [
+                      13.44,
+                      52.5
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 17,
+            "method": "tools/call",
+            "params": {
+              "name": "evaluate_spatial_relation",
+              "arguments": {
+                "operation": "disjoint",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                },
+                "other_geometry": {
+                  "type": "Point",
+                  "coordinates": [
+                    13.5,
+                    52.6
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 18,
+            "method": "tools/call",
+            "params": {
+              "name": "evaluate_spatial_relation",
+              "arguments": {
+                "operation": "valid",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        13.38,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.5
+                      ],
+                      [
+                        13.42,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.54
+                      ],
+                      [
+                        13.38,
+                        52.5
+                      ]
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "jsonrpc": "2.0",
+            "id": 19,
+            "method": "tools/call",
+            "params": {
+              "name": "evaluate_spatial_relation",
+              "arguments": {
+                "operation": "point_on_line",
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [
+                    13.41,
+                    52.53
+                  ]
+                },
+                "other_geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [
+                      13.38,
+                      52.5
+                    ],
+                    [
+                      13.41,
+                      52.53
+                    ],
+                    [
+                      13.44,
+                      52.54
+                    ]
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "x-geoapify-mcp-tool": "evaluate_spatial_relation",
+        "x-geoapify-mcp-category": "Utilities",
+        "x-geoapify-mcp-input-schema": "#/components/schemas/EvaluateSpatialRelationInput",
+        "x-geoapify-mcp-output-schema": "#/components/schemas/EvaluateSpatialRelationOutput",
+        "x-geoapify-mcp-operations": [
+          {
+            "name": "contains",
+            "description": "Return true when geometry contains other_geometry.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationContainsInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationContainsOutput"
+            }
+          },
+          {
+            "name": "crosses",
+            "description": "Return true when the geometries cross one another.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationCrossesInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationCrossesOutput"
+            }
+          },
+          {
+            "name": "disjoint",
+            "description": "Return true when the geometries share no point.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationDisjointInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationDisjointOutput"
+            }
+          },
+          {
+            "name": "intersects",
+            "description": "Return true when the geometries share at least one point.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationIntersectsInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationIntersectsOutput"
+            }
+          },
+          {
+            "name": "within",
+            "description": "Return true when geometry is completely within other_geometry.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationWithinInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationWithinOutput"
+            }
+          },
+          {
+            "name": "valid",
+            "description": "Check whether one GeoJSON geometry is valid.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationValidInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationValidOutput"
+            }
+          },
+          {
+            "name": "point_on_line",
+            "description": "Check whether a point lies on a line.",
+            "inputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationPointOnLineInput"
+            },
+            "outputSchema": {
+              "$ref": "#/components/schemas/EvaluateSpatialRelationPointOnLineOutput"
+            }
+          }
+        ]
+      },
+      "EvaluateSpatialRelationToolCallSuccessResponse": {
+        "type": "object",
+        "description": "Successful JSON-RPC response with tool-specific structured content.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "structuredContent",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "JSON text representation of structuredContent.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded copy of structuredContent."
+                    }
+                  }
+                }
+              },
+              "structuredContent": {
+                "$ref": "#/components/schemas/EvaluateSpatialRelationOutput"
+              },
+              "isError": {
+                "const": false
+              }
+            }
+          }
+        }
+      },
+      "ToolCallErrorResponse": {
+        "type": "object",
+        "description": "JSON-RPC tools/call response when tool execution fails.",
+        "required": [
+          "jsonrpc",
+          "id",
+          "result"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "$ref": "#/components/schemas/JsonRpcId"
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "content",
+              "isError"
+            ],
+            "properties": {
+              "content": {
+                "type": "array",
+                "description": "Tool error details represented as JSON text.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "JSON-encoded GatewayError with statusCode, error, and message fields."
+                    }
+                  }
+                }
+              },
+              "isError": {
+                "const": true
+              }
+            }
+          }
+        }
+      },
+      "EvaluateSpatialRelationToolCallResponse": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/EvaluateSpatialRelationToolCallSuccessResponse"
+          },
+          {
+            "$ref": "#/components/schemas/ToolCallErrorResponse"
+          },
+          {
+            "$ref": "#/components/schemas/JsonRpcErrorResponse"
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyInHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Geoapify API key header. Recommended authentication method for MCP clients."
+      }
+    }
+  },
+  "x-geoapify-mcp-tool-index": "index.json",
+  "security": [
+    {
+      "ApiKeyInHeader": []
+    }
+  ]
+}
