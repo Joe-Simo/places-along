@@ -24,6 +24,18 @@ export function categoryOf(geoapifyCategories: string[]): Category | null {
   return null;
 }
 
+/** A readable name for a place OpenStreetMap left unnamed, such as most public toilets. */
+export function unnamedPlace(geoapifyCategories: string[], category: Category): string {
+  const has = (k: string) => geoapifyCategories.some((g) => g === k || g.startsWith(`${k}.`));
+  if (has("amenity.toilet")) return "Public toilets";
+  if (has("leisure.picnic")) return "Picnic site";
+  if (has("service.vehicle.charging_station")) return "EV charger";
+  if (has("catering.cafe")) return "Cafe";
+  if (has("catering.fast_food")) return "Fast food";
+  if (has("catering.restaurant")) return "Restaurant";
+  return CATEGORIES[category].label;
+}
+
 export interface Trip {
   from: string;
   to: string;

@@ -3,7 +3,7 @@ import { createGeoapify, type HttpCall, type PlaceFeature } from "./geoapify/cli
 import { planStops, stopWindows } from "./plan";
 import { sampleRestFetch } from "./sample";
 import type { LonLat, Place, Route, RunResult, TraceEntry, Trip } from "./types";
-import { CATEGORIES, categoryOf } from "./types";
+import { CATEGORIES, categoryOf, unnamedPlace } from "./types";
 
 /** One readable line per HTTP call, from its response. */
 export function summarizeHttp(c: HttpCall): string {
@@ -22,7 +22,7 @@ export function placeFromFeature(f: Pick<PlaceFeature, "properties">): Place | n
   const p = f.properties as { name?: string; formatted?: string; address_line2?: string; lat?: number; lon?: number; categories?: string[]; place_id?: string };
   const category = categoryOf(p.categories ?? []);
   if (!category || p.lat === undefined || p.lon === undefined) return null;
-  return { id: p.place_id ?? `${p.lon},${p.lat}`, name: p.name ?? CATEGORIES[category].label, address: p.formatted ?? p.address_line2 ?? "", at: [p.lon, p.lat], category };
+  return { id: p.place_id ?? `${p.lon},${p.lat}`, name: p.name ?? unnamedPlace(p.categories ?? [], category), address: p.formatted ?? p.address_line2 ?? "", at: [p.lon, p.lat], category };
 }
 
 /**

@@ -3,7 +3,7 @@ import type { ChatMessage, ToolChat, ToolSpec } from "./llm";
 import type { McpSession } from "./mcp/connect";
 import { planStops } from "./plan";
 import type { LonLat, Pick, Place, Route, RunResult, Stop, TraceEntry, Trip } from "./types";
-import { CATEGORIES, CATEGORY_ORDER, categoryOf } from "./types";
+import { CATEGORIES, CATEGORY_ORDER, categoryOf, unnamedPlace } from "./types";
 
 /** The five Geoapify MCP tools this job needs. Geoapify's guide advises enabling only what a workflow uses. */
 export const AGENT_TOOLS = ["geocode_address", "calculate_route", "measure_geometry", "search_places", "list_place_categories"];
@@ -74,7 +74,7 @@ class Notebook {
         const category = categoryOf(cats) ?? categoryOf([String(args.category)]);
         if (!category || typeof r.lat !== "number" || typeof r.lon !== "number") continue;
         const id = String(r.place_id ?? `${r.lon},${r.lat}`);
-        this.places.set(id, { id, name: String(r.name ?? CATEGORIES[category].label), address: String(r.formatted ?? ""), at: [r.lon, r.lat], category });
+        this.places.set(id, { id, name: String(r.name ?? unnamedPlace(cats, category)), address: String(r.formatted ?? ""), at: [r.lon, r.lat], category });
       }
       summary = `${results.length} \u00d7 ${args.category}`;
     }
