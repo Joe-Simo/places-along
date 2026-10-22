@@ -1,0 +1,87 @@
+# OpenCode 1.19.4 with local Ollama models (CPU only), Oct 22, 2026. The key is read from an environment variable and not shown.
+# Output is real, with terminal colors removed. Times are wall clock.
+
+$ jq .mcp opencode.json
+{
+  "geoapify": {
+    "type": "remote",
+    "url": "https://api.geoapify.com/v1/mcp",
+    "headers": {
+      "x-api-key": "{env:GEOAPIFY_API_KEY}"
+    },
+    "oauth": false
+  }
+}
+
+$ opencode mcp list
+
+┌  MCP Servers
+│
+●  ✓ geoapify connected
+│      https://api.geoapify.com/v1/mcp
+│
+└  1 server(s)
+
+
+## Run 1: qwen2.5:3b, 52 s
+
+$ opencode run -m ollama/qwen2.5:3b 'Use the Geoapify tools to geocode "Lawrence, KS". Return the formatted address and the coordinates, and tell me which tool you called.'
+
+> build · qwen2.5:3b
+
+⚙ geoapify_geocode_address {"query":"Lawrence, KS"}
+I used the `geoapify_geocode_address` tool and provided "Lawrence, KS" as the query. Here is the information: 
+
+- Formatted Address: Lawrence, KS, United States of America
+- Coordinates: Latitude -95.2359403, Longitude 38.9719137
+- Place ID: 51bd1358a519cf57c05966040aab677c4340f00101f901a3fb010000000000c002089203084c617772656e6365
+
+Let me know if you need further assistance with this information.
+
+# Wrong: latitude and longitude are swapped. The tool returned lat 38.9719137, lon -95.2359403.
+
+## Run 2: qwen3:4b, 4 min 53 s, same prompt
+
+$ opencode run -m ollama/qwen3:4b 'Use the Geoapify tools to geocode "Lawrence, KS". Return the formatted address and the coordinates, and tell me which tool you called.'
+
+> build · qwen3:4b
+
+⚙ geoapify_geocode_address {"query":"Lawrence, KS"}
+Formatted address: Lawrence, KS, United States of America  
+Coordinates: lat 38.9719137, lon -95.2359403  
+Tool used: `geoapify_geocode_address`
+
+# Correct.
+
+## Run 3: qwen2.5:3b, 57 s
+
+$ opencode run -m ollama/qwen2.5:3b 'Using only the Geoapify tools: geocode "Salina, KS", then call search_places with category "catering.cafe", the coordinates you got, radius_meters 20000 and limit 3. List each cafe with its name, street, and distance in meters, and say which tool call returned it. Never name a place a tool did not return.'
+
+> build · qwen2.5:3b
+
+⚙ geoapify_geocode_address {"query":"Salina, KS"}
+⚙ geoapify_search_places {"lat":38.5642,"lon":-97.6017,"radius_meters":20000,"limit":3,"category":"catering.cafe"}
+The information for the cafe named "Blacksmith Coffee" in Lindsborg, KS with the coordinates you requested is as follows:
+
+- **Name**: Blacksmith Coffee
+- **Street**: North Main Street
+- **Distance**: 6539 meters 
+
+The tool call for `geoapify_search_places` returned this information.
+
+
+# Partly wrong: geocode_address returned lat 38.8402805, lon -97.6114237 for Salina, but the model searched at 38.5642, -97.6017,
+# about 31 km south, near Lindsborg. Blacksmith Coffee was really returned by that search, but it is not near Salina.
+
+## Run 4: qwen3:4b, same prompt
+
+$ opencode run -m ollama/qwen3:4b 'Using only the Geoapify tools: geocode "Salina, KS", then call search_places with category "catering.cafe", the coordinates you got, radius_meters 20000 and limit 3. List each cafe with its name, street, and distance in meters, and say which tool call returned it. Never name a place a tool did not return.'
+
+> build · qwen3:4b
+
+⚙ geoapify_geocode_address {"query":"Salina, KS"}
+⚙ geoapify_search_places {"category":"catering.cafe","lat":38.8402805,"lon":-97.6114237,"radius_meters":20000,"limit":3}
+
+
+# Both calls were right, with the exact coordinates. No answer after 20 minutes; stopped by timeout.
+# A retry with /no_think added made no tool call in 12 min 40 s and was stopped.

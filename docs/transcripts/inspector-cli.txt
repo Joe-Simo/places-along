@@ -1,0 +1,29 @@
+# MCP Inspector CLI 2.12.0 against the Geoapify MCP server, Oct 22, 2026 (Node 20.19.2).
+# The key is read from an environment variable and not shown. Output is real; jq trims results to a few fields.
+
+$ INSPECT="npx -y @modelcontextprotocol/inspector@2.12.0 --cli https://api.geoapify.com/v1/mcp --transport http"
+
+$ $INSPECT --header "x-api-key: $GEOAPIFY_API_KEY" --method tools/list | jq -r ".tools[].name"
+geocode_address
+geocode_structured_address
+reverse_geocode_coordinates
+search_places
+list_place_categories
+calculate_route
+calculate_route_matrix
+combine_geometries
+evaluate_spatial_relation
+measure_geometry
+transform_geometry
+
+$ $INSPECT --header "x-api-key: $GEOAPIFY_API_KEY" --method tools/call --tool-name geocode_address --tool-arg "query=Lawrence, KS" | jq -c ".structuredContent.results[0] | {formatted, lat, lon, result_type}"
+{"formatted":"Lawrence, KS, United States of America","lat":38.9719137,"lon":-95.2359403,"result_type":"city"}
+
+$ $INSPECT --header "x-api-key: $GEOAPIFY_API_KEY" --method tools/call --tool-name search_places --tool-arg category=catering.cafe --tool-arg lat=38.878 --tool-arg lon=-97.807 --tool-arg radius_meters=50000 --tool-arg limit=3 | jq -c ".structuredContent.results[] | {name, city, distance}"
+{"name":"Jim's chicken","city":"Salina","distance":16747}
+{"name":"Ad Astra Books and Coffeehouse","city":"Salina","distance":17601}
+{"name":"Starbucks","city":"Salina","distance":18998}
+
+$ $INSPECT --header "x-api-key: $GEOAPIFY_API_KEY" --method tools/call --tool-name search_places --tool-arg category=service.vehicle.charging_station --tool-arg lat=38.878 --tool-arg lon=-97.807 --tool-arg radius_meters=50000 --tool-arg limit=3
+{"error":{"code":"error","message":"data/results/0/ele must be string, data/results/0/ref_other/plugshare must be string, data/results/2/ref must be string"}}
+

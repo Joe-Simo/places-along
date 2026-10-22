@@ -6,7 +6,7 @@ import { marked } from "marked";
 
 export const metadata: Metadata = {
   title: "Tutorial: plan stops along a route with Geoapify MCP and OpenAPI",
-  description: "Connect the Geoapify MCP server in Cursor and Claude Code, then build a stops-along-the-route planner two ways: an agent over MCP and a typed client generated from Geoapify's OpenAPI specs.",
+  description: "Connect the Geoapify MCP server in MCP Inspector and OpenCode (tested), Cursor, and Claude Code, then build a stops-along-the-route planner two ways: an agent over MCP and a typed client generated from Geoapify's OpenAPI specs.",
 };
 
 /** docs/TUTORIAL.md is the single source; this page renders it at build time. */

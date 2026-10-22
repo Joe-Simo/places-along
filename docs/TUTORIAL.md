@@ -5,14 +5,14 @@ You are driving Lawrence, Kansas to Denver, Colorado, more than 500 miles on I-7
 1. **Agent path.** An AI model plans the work and calls Geoapify tools through the [Geoapify MCP server](https://apidocs.geoapify.com/docs/mcp/). Every tool call is logged.
 2. **Direct path.** Plain TypeScript calls the Geoapify REST APIs through a client whose types are generated from [Geoapify's OpenAPI specs](https://github.com/geoapify/geoapify-openapi-specs).
 
-Part A needs no code: it connects the Geoapify MCP server to Cursor and to Claude Code and gives you the exact prompts. Parts B to D walk through the open source app, [Places Along](https://github.com/Joe-Simo/places-along), which runs both paths side by side.
+Part A needs no code: it connects the Geoapify MCP server to two clients we ran, MCP Inspector and OpenCode with a local model, shows the config for Cursor and Claude Code, and gives you the exact prompts. Parts B to D walk through the open source app, [Places Along](https://github.com/Joe-Simo/places-along), which runs both paths side by side.
 
-> **What was actually tested (Oct 22, 2026, with a live Geoapify key).** Everything in Parts B to D ran against the live Geoapify APIs and MCP server, and the [hosted demo](https://places-along.vercel.app) runs on live data. For Part A, the tool calls were run live with the official MCP TypeScript client and with curl; those transcripts are real and linked below. **Cursor and Claude Code themselves were not run for this tutorial.** Their setup steps follow Geoapify's own [client setup guide](https://apidocs.geoapify.com/how-to/api-tooling-ai/connect-ai-client-mcp/) and each client's documented config format, so there are no Cursor or Claude Code screenshots here. The screenshots show the Places Along app, which logs every call it makes. Keys are hidden everywhere.
+> **What was actually tested (Oct 22, 2026, with a live Geoapify key).** Everything in Parts B to D ran against the live Geoapify APIs and MCP server, and the [hosted demo](https://places-along.vercel.app) runs on live data. In Part A, **MCP Inspector and OpenCode were run**; their screenshots and transcripts are real, and the results below are what the server returned. **Cursor and Claude Code were not run.** Their config follows Geoapify's [client setup guide](https://apidocs.geoapify.com/how-to/api-tooling-ai/connect-ai-client-mcp/) and each client's documented format. Keys are hidden everywhere.
 
 ## What you need
 
 - A Geoapify API key. Create a project at [myprojects.geoapify.com](https://myprojects.geoapify.com/) and copy its key.
-- For Part A: Cursor or Claude Code.
+- For Part A: Node.js 20 or newer for MCP Inspector, and [OpenCode](https://opencode.ai) with [Ollama](https://ollama.com) for a local model. Or Cursor or Claude Code.
 - For Parts B to D: Node.js 20 or newer and pnpm. Optional: an [OpenRouter](https://openrouter.ai/) key, so the agent path is driven by a model rather than a script.
 
 Keep the key in an environment variable named `GEOAPIFY_API_KEY`. Do not paste it into chat, into a committed file, or into a screenshot.
@@ -36,7 +36,111 @@ The server exposes eleven tools: `geocode_address`, `geocode_structured_address`
 
 `initialize` and `tools/list` cost no credits. Each `tools/call` is billed like the Geoapify API call behind it ([Geoapify docs](https://apidocs.geoapify.com/how-to/api-tooling-ai/connect-ai-client-mcp/)).
 
-### Cursor
+### MCP Inspector (tested)
+
+[MCP Inspector](https://github.com/modelcontextprotocol/inspector) is the MCP project's own test client. Its CLI mode needs no account and no config file, so it is the quickest way to prove that your key and the server work.
+
+1. Install: nothing to install. `npx` fetches it. Tested with version 2.12.0 on Node 20.19.2.
+2. Run:
+
+   ```bash
+   INSPECT="npx -y @modelcontextprotocol/inspector@2.12.0 --cli https://api.geoapify.com/v1/mcp --transport http"
+   $INSPECT --header "x-api-key: $GEOAPIFY_API_KEY" --method tools/list | jq -r ".tools[].name"
+   $INSPECT --header "x-api-key: $GEOAPIFY_API_KEY" --method tools/call --tool-name geocode_address \
+     --tool-arg "query=Lawrence, KS"
+   $INSPECT --header "x-api-key: $GEOAPIFY_API_KEY" --method tools/call --tool-name search_places \
+     --tool-arg category=catering.cafe --tool-arg lat=38.878 --tool-arg lon=-97.807 \
+     --tool-arg radius_meters=50000 --tool-arg limit=3
+   ```
+
+   The point `38.878, -97.807` is two hours into the Lawrence to Denver drive, just west of Salina.
+
+What it returned: all eleven tools; `Lawrence, KS, United States of America` at `38.9719137, -95.2359403`; and three cafes in Salina, 16.7 to 19.0 km away. The same search for `service.vehicle.charging_station` returned an error instead of results (see gotchas).
+
+![A real MCP Inspector session against the Geoapify MCP server. jq trims each result to a few fields. The key stays in an environment variable.](../public/tutorial/inspector-cli.png)
+
+Full output: [transcripts/inspector-cli.txt](transcripts/inspector-cli.txt).
+
+Gotchas:
+
+- **EV charging results fail validation.** Inspector checks each result against the tool's `outputSchema`, like the official TypeScript client, and prints `data/results/0/ele must be string, ...` instead of the stations. The data arrived; the check failed. See point 2 under "What those calls really return".
+- **Quote the header.** Keep `"x-api-key: $GEOAPIFY_API_KEY"` in double quotes so the shell expands the variable and the key never appears in the command you type.
+- **Only `tools/call` costs credits.** `tools/list` is free, so it is the safe first check.
+
+### OpenCode with a local model (tested)
+
+[OpenCode](https://opencode.ai) is an open source terminal agent. With [Ollama](https://ollama.com) the model runs on your own machine, so this setup needs no AI account.
+
+1. Install (tested: OpenCode 1.19.4, Ollama 0.40.8):
+
+   ```bash
+   npm install -g opencode-ai
+   curl -fsSL https://ollama.com/install.sh | sh
+   ollama pull qwen3:4b
+   OLLAMA_CONTEXT_LENGTH=24576 ollama serve
+   ```
+
+2. Create `opencode.json` in an empty folder. This is the file we ran, trimmed to one model. It turns off OpenCode's built-in tools, so a small model sees only the Geoapify tools:
+
+   ```json
+   {
+     "$schema": "https://opencode.ai/config.json",
+     "provider": {
+       "ollama": {
+         "npm": "@ai-sdk/openai-compatible",
+         "name": "Ollama (local)",
+         "options": { "baseURL": "http://localhost:11434/v1" },
+         "models": { "qwen3:4b": { "name": "Qwen3 4B", "tools": true } }
+       }
+     },
+     "mcp": {
+       "geoapify": {
+         "type": "remote",
+         "url": "https://api.geoapify.com/v1/mcp",
+         "headers": { "x-api-key": "{env:GEOAPIFY_API_KEY}" },
+         "oauth": false
+       }
+     },
+     "tools": {
+       "bash": false, "edit": false, "write": false, "read": false, "glob": false, "grep": false, "list": false,
+       "patch": false, "webfetch": false, "websearch": false, "task": false, "todowrite": false, "todoread": false, "skill": false
+     }
+   }
+   ```
+
+3. In that folder, run `opencode mcp list`. It should show `✓ geoapify connected`.
+4. Ask:
+
+   ```bash
+   opencode run -m ollama/qwen3:4b 'Use the Geoapify tools to geocode "Lawrence, KS". Return the formatted address and the coordinates, and tell me which tool you called.'
+   ```
+
+![A real OpenCode session: the config, the connected server, and qwen3:4b calling geocode_address. The key stays in an environment variable.](../public/tutorial/opencode-ollama.png)
+
+What it returned, on an 8-core CPU with no GPU ([full transcript](transcripts/opencode-ollama.txt)):
+
+| Model | Prompt | Tool calls | Answer | Time |
+| --- | --- | --- | --- | --- |
+| qwen3:4b | geocode Lawrence | `geocode_address` | Correct: lat 38.9719137, lon -95.2359403 | 4 min 53 s |
+| qwen2.5:3b | geocode Lawrence | `geocode_address` | Latitude and longitude swapped | 52 s |
+| qwen2.5:3b | geocode Salina, then cafes within 20 km | `geocode_address`, `search_places` | Searched 31 km south of the geocoded point, so it named a cafe in Lindsborg | 57 s |
+| qwen3:4b | the same | `geocode_address`, `search_places` with the exact coordinates | None after 20 minutes | stopped |
+
+The second prompt was:
+
+```text
+Using only the Geoapify tools: geocode "Salina, KS", then call search_places with category "catering.cafe", the coordinates you got, radius_meters 20000 and limit 3. List each cafe with its name, street, and distance in meters, and say which tool call returned it. Never name a place a tool did not return.
+```
+
+Gotchas:
+
+- **Read the tool calls, not only the answer.** OpenCode prints each call as a `⚙` line. That is where the small model's mistakes showed: the swapped coordinates and the search in the wrong town.
+- **Small local models are slow on a CPU.** The server connected every time, but qwen3:4b needed minutes per answer, and a retry of the second prompt with `/no_think` made no tool call in 12 minutes. We did not run the full trip prompt (prompt 1) here: it needs about twelve calls and a 5,147-point route. Use a GPU or a larger hosted model for it.
+- **Give Ollama a bigger context.** Ollama's default context window was too small for the eleven tool definitions plus the prompt. `OLLAMA_CONTEXT_LENGTH=24576` fixed it.
+- **The key syntax differs by client.** OpenCode uses `{env:GEOAPIFY_API_KEY}`, Cursor `${env:GEOAPIFY_API_KEY}`, Claude Code `${GEOAPIFY_API_KEY}`.
+- **Tool names get a prefix.** OpenCode shows `geocode_address` as `geoapify_geocode_address`.
+
+### Cursor (config only, not run)
 
 1. Set `GEOAPIFY_API_KEY` in the environment that starts Cursor, then restart Cursor.
 2. Create `.cursor/mcp.json` in your project (or merge into the existing one):
@@ -55,9 +159,9 @@ The server exposes eleven tools: `geocode_address`, `geocode_structured_address`
 3. Open Cursor Settings, find the MCP section, and turn on `geoapify`. You should see its tools listed.
 4. Check the file: it must contain `${env:GEOAPIFY_API_KEY}`, never the key itself.
 
-*Not run by us in Cursor (see the note at the top). The same server, URL, and header were tested live with the official MCP client: [transcript](transcripts/mcp-official-client.txt).*
+*Not run in Cursor. The same server, URL, and header were tested with MCP Inspector, OpenCode, and the official MCP client: [transcript](transcripts/mcp-official-client.txt).*
 
-### Claude Code
+### Claude Code (config only, not run)
 
 1. Set `GEOAPIFY_API_KEY` in the shell where you start `claude`.
 2. Create `.mcp.json` in the project root (or merge into the existing one):
@@ -76,11 +180,11 @@ The server exposes eleven tools: `geocode_address`, `geocode_structured_address`
 
 3. Start `claude` in that folder, approve the project server when asked, then run `/mcp` to see `geoapify` connected. `claude mcp get geoapify` shows the same from the terminal.
 
-*Not run by us in Claude Code (see the note at the top). The same server, URL, and header were tested live with the official MCP client and with curl: [client transcript](transcripts/mcp-official-client.txt), [curl transcript](transcripts/mcp-curl.txt).*
+*Not run in Claude Code. The same server, URL, and header were tested with MCP Inspector, OpenCode, the official MCP client, and curl: [client transcript](transcripts/mcp-official-client.txt), [curl transcript](transcripts/mcp-curl.txt).*
 
 ### Check the connection
 
-Paste this into the chat:
+In OpenCode, Cursor, or Claude Code, paste this into the chat:
 
 ```text
 Use the Geoapify tools to geocode "Lawrence, KS". Return the formatted address and the coordinates, and tell me which tool you called.
@@ -92,11 +196,11 @@ You should see one `geocode_address` call and a result with a formatted address 
 { "formatted": "Lawrence, KS, United States of America", "lat": 38.9719137, "lon": -95.2359403, "result_type": "city" }
 ```
 
- If the client reports HTTP 401, the key did not arrive: check the environment variable and restart the client. (Without a key, the endpoint answers `{"statusCode":401,"error":"Unauthorized","message":"Invalid apiKey"}`, even for `initialize`.)
+If the client reports HTTP 401, the key did not arrive: check the environment variable and restart the client. (Without a key, the endpoint answers `{"statusCode":401,"error":"Unauthorized","message":"Invalid apiKey"}`, even for `initialize`.)
 
 ### The prompts
 
-These are the exact prompts Places Along is built around. They work in Cursor and Claude Code once the server is connected.
+These are the exact prompts Places Along is built around, for any agent client with the server connected. We ran them as plain tool calls (below), not in Cursor or Claude Code, and not prompt 1 in OpenCode.
 
 **1. The trip question.**
 
@@ -162,7 +266,7 @@ We ran exactly these calls, in this order, with the official MCP TypeScript clie
        client error (362 ms): Structured content does not match the tool's output schema: data/results/0/ele must be string, data/results/0/ref_other/plugshare must be string, data/results/2/ref must be string
    ```
 
-   Cafe searches passed. We did not test whether Cursor or Claude Code validate results this strictly. If your client shows this error, the data arrived; it is the check that failed. Places Along keeps the result and notes the mismatch in its trace (Part B).
+   Cafe searches passed. MCP Inspector fails the same way. We did not run an EV search in OpenCode, Cursor, or Claude Code. If your client shows this error, the data arrived; it is the check that failed. Places Along keeps the result and notes the mismatch in its trace (Part B).
 
 3. **The route geometry is big.** This route has 5,147 coordinate pairs. In a chat client the model has to carry that line between `calculate_route` and every `measure_geometry` call, which costs a lot of context and can go wrong. If your client struggles, the app approach in Part B avoids it.
 

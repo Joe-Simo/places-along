@@ -11,7 +11,7 @@ Every Geoapify call on both sides is shown in a trace, with its arguments, resul
 
 ![Places Along on live Geoapify data](public/screenshots/live-overview.png)
 
-Built for the [Geoapify Open Geospatial Program](https://www.geoapify.com/open-geospatial-program/), Batch #2. The full write-up is the **[tutorial](docs/TUTORIAL.md)** (also at `/tutorial` in the app), including how to connect the Geoapify MCP server to Cursor and Claude Code with the exact prompts.
+Built for the [Geoapify Open Geospatial Program](https://www.geoapify.com/open-geospatial-program/), Batch #2. The full write-up is the **[tutorial](docs/TUTORIAL.md)** (also at `/tutorial` in the app), including tested setups of the Geoapify MCP server in MCP Inspector and OpenCode (with a local model), with screenshots and the exact prompts.
 
 ## Status
 
@@ -106,6 +106,7 @@ Any Node host works. On Vercel: import the repo, set `GEOAPIFY_API_KEY` (and opt
 - Automated: `pnpm test` (33 tests: parser, geometry, planner, both paths end to end in sample mode, the live-shape fixes, house style), plus typecheck, lint, and build.
 - Live, Oct 22, 2026, on the hosted demo with the program key: Lawrence, KS to Denver, CO (coffee and EV charging); Portland, OR to Boise, ID (coffee and food); Chicago, IL to Nashville, TN (food and rest). Both paths returned stops on every trip with no failed calls.
 - `pnpm smoke` and `pnpm transcript` against the live API and MCP server (output in [docs/transcripts/](docs/transcripts/)).
+- The Geoapify MCP server in MCP Inspector 2.12.0 and in OpenCode 1.19.4 with local Ollama models (qwen3:4b, qwen2.5:3b), Oct 22, 2026. Screenshots in the tutorial, transcripts in [docs/transcripts/](docs/transcripts/).
 
 ## Known limitations
 
@@ -115,12 +116,12 @@ Any Node host works. On Vercel: import the repo, set `GEOAPIFY_API_KEY` (and opt
 - **Driving only, one question shape.** The parser reads "A to B" plus the kinds of stop and "every N hours" or minutes. Other phrasings get a hint instead of an answer.
 - **"Rest" means public toilets and picnic sites.** Geoapify has no highway rest area category (see FEEDBACK.md).
 - **The map is a schematic line**, not a tile map: enough to place the stops along the drive, not to navigate.
-- **Cursor and Claude Code were not run for the tutorial.** Their setup follows Geoapify's guide; the tested equivalents are the official MCP client and curl transcripts.
+- **Cursor and Claude Code were not run for the tutorial.** Their config follows Geoapify's guide. The tested clients are MCP Inspector and OpenCode with a local model, plus the official MCP client and curl. The small local models were slow on a CPU and sometimes miscopied coordinates, and the full trip prompt was not run in OpenCode.
 
 ## Also in this repo
 
 - [docs/TUTORIAL.md](docs/TUTORIAL.md): the tutorial
-- [docs/transcripts/](docs/transcripts/): real transcripts of the Geoapify MCP server (official client and curl), key hidden
+- [docs/transcripts/](docs/transcripts/): real transcripts of the Geoapify MCP server (official client, curl, MCP Inspector, OpenCode), key hidden
 - [LESSONS.md](LESSONS.md): what needed human guidance while building it
 - [FEEDBACK.md](FEEDBACK.md): concrete notes on Geoapify's OpenAPI specs and MCP tools
 - [prompts/](prompts/): agent instructions and client prompts
