@@ -101,6 +101,22 @@ cp .env.example .env.local
 
 Any Node host works. On Vercel: import the repo, set `GEOAPIFY_API_KEY` (and optionally `OPENROUTER_API_KEY`) as environment variables, deploy.
 
+## Tested
+
+- Automated: `pnpm test` (33 tests: parser, geometry, planner, both paths end to end in sample mode, the live-shape fixes, house style), plus typecheck, lint, and build.
+- Live, Oct 22, 2026, on the hosted demo with the program key: Lawrence, KS to Denver, CO (coffee and EV charging); Portland, OR to Boise, ID (coffee and food); Chicago, IL to Nashville, TN (food and rest). Both paths returned stops on every trip with no failed calls.
+- `pnpm smoke` and `pnpm transcript` against the live API and MCP server (output in [docs/transcripts/](docs/transcripts/)).
+
+## Known limitations
+
+- **The agent can miss stops the direct path finds.** MCP `search_places` searches a circle around one point per stop; the REST Places polyline filter covers the whole stretch of road. On empty roads the agent comes back with fewer picks, and the page says why.
+- **The hosted agent is scripted.** It makes the same MCP calls a model would, in a fixed order. The model driver (OpenRouter free models) works locally but took 45 to 70 s per run in our tests and sometimes timed out.
+- **The demo's daily budget is per server instance** and kept in memory, so it resets when an instance restarts. It keeps casual traffic well under the free plan; it is not a hard global quota.
+- **Driving only, one question shape.** The parser reads "A to B" plus the kinds of stop and "every N hours" or minutes. Other phrasings get a hint instead of an answer.
+- **"Rest" means public toilets and picnic sites.** Geoapify has no highway rest area category (see FEEDBACK.md).
+- **The map is a schematic line**, not a tile map: enough to place the stops along the drive, not to navigate.
+- **Cursor and Claude Code were not run for the tutorial.** Their setup follows Geoapify's guide; the tested equivalents are the official MCP client and curl transcripts.
+
 ## Also in this repo
 
 - [docs/TUTORIAL.md](docs/TUTORIAL.md): the tutorial
