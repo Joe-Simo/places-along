@@ -9,21 +9,26 @@ Type a trip like *"Driving Lawrence, KS to Denver, CO. Where can we stop for cof
 
 Every Geoapify call on both sides is shown in a trace, with its arguments, result summary, and time. A map and a one-line comparison sit on top.
 
-![Places Along in sample mode](docs/screenshots/sample-mode.png)
+![Places Along on live Geoapify data](public/screenshots/live-overview.png)
 
 Built for the [Geoapify Open Geospatial Program](https://www.geoapify.com/open-geospatial-program/), Batch #2. The full write-up is the **[tutorial](docs/TUTORIAL.md)** (also at `/tutorial` in the app), including how to connect the Geoapify MCP server to Cursor and Claude Code with the exact prompts.
 
 ## Status
 
-Demo: **[places-along.vercel.app](https://places-along.vercel.app)** (sample mode until the Geoapify key is set).
+Demo: **[places-along.vercel.app](https://places-along.vercel.app)**, on live Geoapify data. The hosted demo runs on a key provided by Geoapify's Open Geospatial Program; to run it yourself, get a free key at [myprojects.geoapify.com](https://myprojects.geoapify.com/).
 
 | | |
 | --- | --- |
+| Live Geoapify, direct path (REST, typed client) | Working, verified on the hosted demo, Oct 22, 2026 |
+| Live Geoapify, agent path (MCP, scripted driver) | Working, verified on the hosted demo, Oct 22, 2026 |
+| Model-driven agent (OpenRouter free models) | Works locally; free models are slow (45 to 70 s) and sometimes time out, so the hosted demo uses the scripted driver |
 | Sample mode (no keys) | Working, tested |
-| Live Geoapify (REST and MCP) | Code complete; awaiting a live run with the program API key |
-| Model-driven agent (OpenRouter) | Code complete and tested against a scripted fake model; live run pending |
 
-Sample mode is honest about what it is: the route is from the public OSRM demo server and the places from OpenStreetMap, not from Geoapify. Every screen says "Sample data".
+What the live run found, and what was fixed, is in [FEEDBACK.md](FEEDBACK.md) and [LESSONS.md](LESSONS.md).
+
+### Protecting the free quota
+
+Geoapify's free plan allows 3,000 requests a day. Every Geoapify call stays on the server (Next.js route handlers); the key never reaches the browser and is not in this repo. The public demo also counts the Geoapify requests it makes and stops live runs at a daily budget (1,000 by default), allows 12 live runs per visitor a day, and caches repeated questions for an hour.
 
 ## Architecture
 
@@ -77,7 +82,8 @@ cp .env.example .env.local
 | `GEOAPIFY_API_KEY` | for live data | Geoapify key from [myprojects.geoapify.com](https://myprojects.geoapify.com/). Read from the environment only; never commit it. |
 | `OPENROUTER_API_KEY` | no | Lets a model drive the agent. Without it the agent follows a scripted plan with the same tools. |
 | `PLACES_ALONG_MODELS` | no | Comma-separated OpenRouter model ids (free models by default). |
-| `PLACES_ALONG_DAILY_LIVE_RUNS` | no | Live runs per server instance per day (default 60), to protect free quotas. |
+| `PLACES_ALONG_DAILY_GEOAPIFY_REQUESTS` | no | Geoapify requests the server may make per day before live runs stop (default 1000; the free plan allows 3,000). Counted per server instance. |
+| `PLACES_ALONG_VISITOR_RUNS_PER_DAY` | no | Live runs per visitor (IP address) per day (default 12). |
 
 ## Scripts
 
@@ -87,7 +93,8 @@ cp .env.example .env.local
 | `pnpm test` | Vitest: parser, geometry, planner, both paths end to end in sample mode, house style |
 | `pnpm typecheck` / `pnpm lint` | TypeScript and ESLint |
 | `pnpm gen:client` | Regenerate types and the MCP tool catalog from `openapi/` |
-| `pnpm smoke` | With `GEOAPIFY_API_KEY` set: one live run of both paths, printed as a report |
+| `pnpm smoke` | With `GEOAPIFY_API_KEY` set: one live run of both paths plus checks of the live MCP shapes, written to `smoke-report.json` |
+| `pnpm transcript` | With `GEOAPIFY_API_KEY` set: the tutorial's prompt 1 as plain MCP tool calls with the official client ([sample output](docs/transcripts/mcp-official-client.txt)) |
 | `node scripts/build-sample.mjs` | Rebuild the sample data from OSRM and OpenStreetMap |
 
 ## Deploy
@@ -97,6 +104,7 @@ Any Node host works. On Vercel: import the repo, set `GEOAPIFY_API_KEY` (and opt
 ## Also in this repo
 
 - [docs/TUTORIAL.md](docs/TUTORIAL.md): the tutorial
+- [docs/transcripts/](docs/transcripts/): real transcripts of the Geoapify MCP server (official client and curl), key hidden
 - [LESSONS.md](LESSONS.md): what needed human guidance while building it
 - [FEEDBACK.md](FEEDBACK.md): concrete notes on Geoapify's OpenAPI specs and MCP tools
 - [prompts/](prompts/): agent instructions and client prompts

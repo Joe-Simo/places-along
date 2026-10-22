@@ -294,7 +294,7 @@ export interface operations {
                 details?: ("instruction_details" | "route_details" | "elevation" | "admin_areas" | "polyline5" | "polyline6")[];
                 /** @description Traffic model for motorized modes. `free_flow` assumes uncongested roads; `approximated` reduces speeds on roads likely to be congested. */
                 traffic?: "free_flow" | "approximated";
-                /** @description Maximum speed for driving, truck, and bus modes. Use 10–252 km/h with `units=metric`, or 6.5–155 mph with `units=imperial`. */
+                /** @description Maximum speed for driving, truck, and bus modes. Use 10 to 252 km/h with `units=metric`, or 6.5 to 155 mph with `units=imperial`. */
                 max_speed?: number;
                 /** @description Response representation. `geojson` returns a GeoJSON FeatureCollection; `json` returns route objects with `{lon, lat}` geometry points; `xml` returns the JSON structure serialized as XML. */
                 format?: "geojson" | "json" | "xml";

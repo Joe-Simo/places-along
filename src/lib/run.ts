@@ -13,7 +13,7 @@ import { CATEGORIES, CATEGORY_ORDER } from "./types";
 export const geoapifyKey = () => process.env.GEOAPIFY_API_KEY?.trim() || null;
 
 export function status() {
-  return { data: geoapifyKey() ? ("live" as const) : ("sample" as const), model: modelKey() ? "openrouter" : null, ...(geoapifyKey() ? { usage: usageToday() } : {}) };
+  return { data: geoapifyKey() ? ("live" as const) : ("sample" as const), model: modelKey() ? "openrouter" : null };
 }
 
 let prompt: string | null = null;
@@ -42,11 +42,6 @@ export const geoapifyRequests = (r: RunResult) => r.trace.filter((t) => t.kind !
 function rollDay() {
   const today = new Date().toISOString().slice(0, 10);
   if (today !== usage.day) Object.assign(usage, { day: today, requests: 0, byVisitor: new Map() });
-}
-
-export function usageToday() {
-  rollDay();
-  return { requests: usage.requests, budget: dailyRequestBudget() };
 }
 
 export type PlanResponse = { trip: Trip; result: RunResult } | { error: string; status: number };

@@ -11,7 +11,10 @@ export const metadata: Metadata = {
 
 /** docs/TUTORIAL.md is the single source; this page renders it at build time. */
 export default function Tutorial() {
-  const md = readFileSync(path.join(process.cwd(), "docs/TUTORIAL.md"), "utf8");
+  // Paths in the markdown are relative to docs/ so they work on GitHub; map them for the site.
+  const md = readFileSync(path.join(process.cwd(), "docs/TUTORIAL.md"), "utf8")
+    .replaceAll("](../public/", "](/")
+    .replaceAll("](transcripts/", "](https://github.com/Joe-Simo/places-along/blob/main/docs/transcripts/");
   const html = marked.parse(md, { async: false });
   return (
     <main className="mx-auto w-full max-w-3xl px-5 sm:px-8 py-10 sm:py-14">

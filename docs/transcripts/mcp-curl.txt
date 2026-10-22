@@ -1,0 +1,17 @@
+# Raw JSON-RPC over HTTP with curl, Oct 22, 2026. The key is read from an environment variable and not shown.
+# Responses are real; jq trims the second one to four fields.
+
+$ curl -s https://api.geoapify.com/v1/mcp -H "content-type: application/json" -H "accept: application/json, text/event-stream" \
+    -H "x-api-key: $GEOAPIFY_API_KEY" -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"0"}}}'
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","serverInfo":{"name":"geoapify-api-gateway-mcp","version":"0.1.0"},"capabilities":{"tools":{}}}}
+
+$ curl ... -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"geocode_address","arguments":{"query":"Lawrence, KS","limit":1}}}' | jq ".result.structuredContent.results[0] | {formatted, lat, lon, result_type}"
+{
+  "formatted": "Lawrence, KS, United States of America",
+  "lat": 38.9719137,
+  "lon": -95.2359403,
+  "result_type": "city"
+}
+
+$ curl ... without the x-api-key header (initialize)
+{"statusCode":401,"error":"Unauthorized","message":"Invalid apiKey"}

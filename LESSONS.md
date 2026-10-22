@@ -24,8 +24,18 @@ These were found by the agent while building, not by a person, but each needed a
 - **Sample data source.** The Overpass API was unreachable from the build machine, so sample places come from Nominatim (one request per second, per its usage policy) and the route from the public OSRM demo server. Both are OpenStreetMap based, like Geoapify, and both are named on the page.
 - **"Rest" stops.** Geoapify's category list has no highway rest area. The agent chose public toilets and picnic sites and documented the gap rather than guessing a category.
 
-## Still needs a person or a key
+## Key day (Oct 22, 2026): what the live run changed
 
-- The Geoapify API key for live runs (requested from Geoapify by email on Oct 21, 2026).
-- Screenshots and transcripts of the Geoapify MCP server in Cursor and Claude Code, with the key hidden.
-- A review of the live results by a person before the repo goes public.
+The program key arrived by email. The agent ran `pnpm smoke`, read the report, and fixed what the live service broke. No person was involved in these fixes; each is recorded in FEEDBACK.md with what was observed.
+
+- **The route had the wrong shape for the next tool.** `calculate_route` returns a `MultiLineString`; `measure_geometry` `along` accepts only a `LineString`. The harness already flattened it, but the smoke check passed it through as is and got a 400, which is how it was found. The sample server now behaves the same way, and a test pins it.
+- **The official client rejected real results.** Once the client has read `tools/list`, it validates every result against the tool's `outputSchema`, and EV charging results break Geoapify's own schema. The scripted driver never called `tools/list`, so it worked; the model driver did, and every charging search failed. The fix is a validator that records the mismatch in the trace and keeps the result. Lesson: test both drivers live, not just one.
+- **A free model sent strings where the schema wanted objects and numbers.** With `measure_geometry`'s eight-branch `oneOf`, the model sent the geometry as a JSON string and the distance as a string. Showing it only the `along` branch, and tidying arguments before the call, fixed it.
+- **The agent's search circle was too small for empty roads.** With a 20 km circle around each stop point, the four-hour stop in western Kansas came back with nothing (no cafe within 20 km at all, and no charger the planner could use). It is now 50 km, which brings in the Oakley Supercharger. The rest of the gap to the direct path is the tool's shape (a circle, not a corridor), and the tutorial and the page say so instead of hiding it.
+- **The demo needed a real budget, not a run count.** The daily cap now counts the Geoapify requests the app actually makes (1,000 a day by default, against the free plan's 3,000), plus 12 live runs per visitor a day and a one-hour cache.
+- **The hosted agent stays scripted.** Free OpenRouter models took 45 to 70 seconds per run and sometimes timed out, and their daily quota is shared with other projects, so the public demo uses the scripted driver and says so. The model driver works locally.
+
+## What was decided without a person, and what still could use one
+
+- **Cursor and Claude Code were not run.** Neither is available on the machine the agent works from, and the agent has no accounts for them. The tutorial says this plainly, keeps the setup steps from Geoapify's guide, and shows real transcripts from the official MCP client and curl instead. Nothing in it claims a Cursor or Claude Code result.
+- **Nobody reviewed the live results by hand.** The agent checked them against the trace and against each other (both paths agree on every stop the agent found).

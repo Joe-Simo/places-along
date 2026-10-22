@@ -17,10 +17,12 @@ Where can I stop for coffee and EV charging about every two hours?
 Work like this:
 1. Geocode both places with geocode_address.
 2. Get a driving route with calculate_route (geometry_format "geojson").
+   It returns a MultiLineString. measure_geometry "along" only accepts a LineString,
+   so pass {"type": "LineString", "coordinates": <the route's first and only line>}.
 3. Work out the points along the route at 2 h, 4 h, 6 h, and so on (stop no later than
    20 minutes before arrival), using measure_geometry with operation "along".
 4. At each point, search with search_places for category "catering.cafe" and for
-   "service.vehicle.charging_station", radius_meters 20000.
+   "service.vehicle.charging_station", radius_meters 50000.
 5. For each stop, pick the closest good option of each kind.
 
 Answer with a numbered stop list: stop time, place name, town, and the tool call each pick came from.

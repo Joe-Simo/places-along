@@ -1,0 +1,73 @@
+$ GEOAPIFY_API_KEY=... pnpm transcript
+# Real output, Oct 22, 2026, from scripts/mcp-transcript.ts (official @modelcontextprotocol/client 2.3.1).
+# The key travels in a header and is never printed.
+
+$ connected to https://api.geoapify.com/v1/mcp (header x-api-key: [hidden])
+  server geoapify-api-gateway-mcp 0.1.0, protocol 2025-06-18
+
+$ tools/list -> 11 tools
+  geocode_address  (has outputSchema)
+  geocode_structured_address  (has outputSchema)
+  reverse_geocode_coordinates  (has outputSchema)
+  search_places  (has outputSchema)
+  list_place_categories  (has outputSchema)
+  calculate_route  (has outputSchema)
+  calculate_route_matrix  (has outputSchema)
+  combine_geometries  (has outputSchema)
+  evaluate_spatial_relation  (has outputSchema)
+  measure_geometry  (has outputSchema)
+  transform_geometry  (has outputSchema)
+
+[1] tools/call geocode_address {"query":"Lawrence, KS","limit":1}
+    ok (2405 ms)
+    Lawrence, KS, United States of America at 38.9719, -95.2359
+
+[2] tools/call geocode_address {"query":"Denver, CO","limit":1}
+    ok (1205 ms)
+    Denver, CO, United States of America at 39.7392, -104.9849
+
+[3] tools/call calculate_route {"waypoints":[{"lat":38.9719137,"lon":-95.2359403},{"lat":39.7392364,"lon":-104.984862}],"mode":"drive","geometry_scope":"route","geometry_format":"geojson"}
+    ok (1216 ms)
+    567 mi, 7.7 h, geometry MultiLineString with 1 part(s)
+
+[4] tools/call measure_geometry {"operation":"along","geometry":{"type":"MultiLineString","coordinates":["[5147 coordinate pairs]"]},"distance":100,"units":"kilometers"}
+    error (434 ms): {"statusCode":400,"error":"Bad Request","message":"geometry.type must be one of LineString"}
+    (expected: along needs a LineString, so flatten the route first)
+
+[5] tools/call measure_geometry {"operation":"along","geometry":{"type":"LineString","coordinates":"[5147 coordinate pairs]"},"distance":236,"units":"kilometers"}
+    ok (353 ms)
+    stop at 2 h: 38.878, -97.808
+
+[6] tools/call search_places {"category":"catering.cafe","lat":38.87832301050335,"lon":-97.8079301241908,"radius_meters":50000,"limit":5}
+    ok (443 ms)
+    5 found: Jim's chicken, Salina (16.8 km); Ad Astra Books and Coffeehouse, Salina (17.7 km); Starbucks, Salina (19.1 km)
+
+[7] tools/call search_places {"category":"service.vehicle.charging_station","lat":38.87832301050335,"lon":-97.8079301241908,"radius_meters":50000,"limit":5}
+    client error (362 ms): Structured content does not match the tool's output schema: data/results/0/ele must be string, data/results/0/ref_other/plugshare must be string, data/results/2/ref must be string
+    no result
+
+[8] tools/call measure_geometry {"operation":"along","geometry":{"type":"LineString","coordinates":"[5147 coordinate pairs]"},"distance":472,"units":"kilometers"}
+    ok (354 ms)
+    stop at 4 h: 39.106, -100.459
+
+[9] tools/call search_places {"category":"catering.cafe","lat":39.10571663436907,"lon":-100.4590227447588,"radius_meters":50000,"limit":5}
+    ok (255 ms)
+    1 found: The Coffee Bean & Tea Leaf, Oakley (38.6 km)
+
+[10] tools/call search_places {"category":"service.vehicle.charging_station","lat":39.10571663436907,"lon":-100.4590227447588,"radius_meters":50000,"limit":5}
+    client error (408 ms): Structured content does not match the tool's output schema: data/results/0/ele must be string, data/results/0/ref_other/tesla must be string, data/results/0/ref_other/plugshare must be string
+    no result
+
+[11] tools/call measure_geometry {"operation":"along","geometry":{"type":"LineString","coordinates":"[5147 coordinate pairs]"},"distance":708,"units":"kilometers"}
+    ok (330 ms)
+    stop at 6 h: 39.274, -103.005
+
+[12] tools/call search_places {"category":"catering.cafe","lat":39.27445880026714,"lon":-103.00545471907382,"radius_meters":50000,"limit":5}
+    ok (470 ms)
+    1 found: Boho Brew, Flagler (5.7 km)
+
+[13] tools/call search_places {"category":"service.vehicle.charging_station","lat":39.27445880026714,"lon":-103.00545471907382,"radius_meters":50000,"limit":5}
+    client error (356 ms): Structured content does not match the tool's output schema: data/results/0/ref must be string, data/results/1/ref must be string
+    no result
+
+13 tool calls. Run on 2026-10-22.

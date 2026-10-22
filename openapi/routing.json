@@ -247,7 +247,7 @@
             "name": "max_speed",
             "in": "query",
             "required": false,
-            "description": "Maximum speed for driving, truck, and bus modes. Use 10–252 km/h with `units=metric`, or 6.5–155 mph with `units=imperial`.",
+            "description": "Maximum speed for driving, truck, and bus modes. Use 10 to 252 km/h with `units=metric`, or 6.5 to 155 mph with `units=imperial`.",
             "schema": {
               "type": "number",
               "minimum": 6.5,

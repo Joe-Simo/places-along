@@ -12,7 +12,8 @@
     "test": "vitest run",
     "typecheck": "next typegen && tsc --noEmit",
     "gen:client": "node scripts/gen-client.mjs",
-    "smoke": "tsx scripts/smoke.ts"
+    "smoke": "tsx scripts/smoke.ts",
+    "transcript": "tsx scripts/mcp-transcript.ts"
   },
   "packageManager": "pnpm@10.34.6",
   "dependencies": {

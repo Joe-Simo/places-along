@@ -7,7 +7,7 @@ You are driving Lawrence, Kansas to Denver, Colorado, more than 500 miles on I-7
 
 Part A needs no code: it connects the Geoapify MCP server to Cursor and to Claude Code and gives you the exact prompts. Parts B to D walk through the open source app, [Places Along](https://github.com/Joe-Simo/places-along), which runs both paths side by side.
 
-> **Status of this tutorial (Oct 21, 2026).** The code, the tests, and the sample mode are complete. The steps in Part A follow Geoapify's own [client setup guide](https://apidocs.geoapify.com/how-to/api-tooling-ai/connect-ai-client-mcp/). The screenshots and recorded transcripts from live runs are marked *pending* below. They will be captured with a real key, with the key hidden, before final submission. Nothing on this page claims a live result that has not been run yet.
+> **What was actually tested (Oct 22, 2026, with a live Geoapify key).** Everything in Parts B to D ran against the live Geoapify APIs and MCP server, and the [hosted demo](https://places-along.vercel.app) runs on live data. For Part A, the tool calls were run live with the official MCP TypeScript client and with curl; those transcripts are real and linked below. **Cursor and Claude Code themselves were not run for this tutorial.** Their setup steps follow Geoapify's own [client setup guide](https://apidocs.geoapify.com/how-to/api-tooling-ai/connect-ai-client-mcp/) and each client's documented config format, so there are no Cursor or Claude Code screenshots here. The screenshots show the Places Along app, which logs every call it makes. Keys are hidden everywhere.
 
 ## What you need
 
@@ -55,7 +55,7 @@ The server exposes eleven tools: `geocode_address`, `geocode_structured_address`
 3. Open Cursor Settings, find the MCP section, and turn on `geoapify`. You should see its tools listed.
 4. Check the file: it must contain `${env:GEOAPIFY_API_KEY}`, never the key itself.
 
-*Screenshot pending: Cursor's MCP settings with `geoapify` enabled and its tools listed. Key not visible.*
+*Not run by us in Cursor (see the note at the top). The same server, URL, and header were tested live with the official MCP client: [transcript](transcripts/mcp-official-client.txt).*
 
 ### Claude Code
 
@@ -76,7 +76,7 @@ The server exposes eleven tools: `geocode_address`, `geocode_structured_address`
 
 3. Start `claude` in that folder, approve the project server when asked, then run `/mcp` to see `geoapify` connected. `claude mcp get geoapify` shows the same from the terminal.
 
-*Screenshot pending: `/mcp` in Claude Code showing `geoapify` connected. Key not visible.*
+*Not run by us in Claude Code (see the note at the top). The same server, URL, and header were tested live with the official MCP client and with curl: [client transcript](transcripts/mcp-official-client.txt), [curl transcript](transcripts/mcp-curl.txt).*
 
 ### Check the connection
 
@@ -86,7 +86,13 @@ Paste this into the chat:
 Use the Geoapify tools to geocode "Lawrence, KS". Return the formatted address and the coordinates, and tell me which tool you called.
 ```
 
-You should see one `geocode_address` call and a result with a formatted address and numeric latitude and longitude. If the client reports HTTP 401, the key did not arrive: check the environment variable and restart the client. (Without a key, the endpoint answers `{"statusCode":401,"error":"Unauthorized","message":"Invalid apiKey"}`, even for `initialize`.)
+You should see one `geocode_address` call and a result with a formatted address and numeric latitude and longitude. This is what the server returned for that call on Oct 22, 2026 (from the [curl transcript](transcripts/mcp-curl.txt)):
+
+```json
+{ "formatted": "Lawrence, KS, United States of America", "lat": 38.9719137, "lon": -95.2359403, "result_type": "city" }
+```
+
+ If the client reports HTTP 401, the key did not arrive: check the environment variable and restart the client. (Without a key, the endpoint answers `{"statusCode":401,"error":"Unauthorized","message":"Invalid apiKey"}`, even for `initialize`.)
 
 ### The prompts
 
@@ -101,10 +107,12 @@ Where can I stop for coffee and EV charging about every two hours?
 Work like this:
 1. Geocode both places with geocode_address.
 2. Get a driving route with calculate_route (geometry_format "geojson").
+   It returns a MultiLineString. measure_geometry "along" only accepts a LineString,
+   so pass {"type": "LineString", "coordinates": <the route's first and only line>}.
 3. Work out the points along the route at 2 h, 4 h, 6 h, and so on (stop no later than
    20 minutes before arrival), using measure_geometry with operation "along".
 4. At each point, search with search_places for category "catering.cafe" and for
-   "service.vehicle.charging_station", radius_meters 20000.
+   "service.vehicle.charging_station", radius_meters 50000.
 5. For each stop, pick the closest good option of each kind.
 
 Answer with a numbered stop list: stop time, place name, town, and the tool call each pick came from.
@@ -132,11 +140,31 @@ Before searching, call list_place_categories and tell me which exact category ke
 "a place to rest on a road trip". Then use them for the stops in my last trip.
 ```
 
-What to expect: about two `geocode_address` calls, one `calculate_route`, one `measure_geometry` per stop, and one `search_places` per stop and category. For the trip above that is 2 + 1 + 4 + 8 = 15 tool calls. `search_places` takes one category per call, which is why the count grows with every kind of stop you ask for.
+What to expect: two `geocode_address` calls, one `calculate_route`, one `measure_geometry` per stop, and one `search_places` per stop and category. The live route is 567 miles and 7 h 44 min, so there are three stops (2 h, 4 h, 6 h) and 2 + 1 + 3 + 6 = 12 tool calls. `search_places` takes one category per call, which is why the count grows with every kind of stop you ask for.
 
-*Transcript pending: the tool calls and answer for prompt 1 in Cursor and in Claude Code, recorded with a live key.*
+### What those calls really return
 
-A note on context size. `calculate_route` returns the full route geometry, and `measure_geometry` needs that geometry passed back in. In a chat client the model has to carry hundreds of coordinates between calls. If your client struggles, ask for `geometry_format "polyline"`, or let the app do it as shown in Part B.
+We ran exactly these calls, in this order, with the official MCP TypeScript client and a live key. The full output is in [transcripts/mcp-official-client.txt](transcripts/mcp-official-client.txt); `pnpm transcript` reproduces it. Three things from that run matter for any client:
+
+1. **The route needs flattening.** Passing `calculate_route`'s geometry straight to `measure_geometry` fails:
+
+   ```text
+   [4] tools/call measure_geometry {"operation":"along","geometry":{"type":"MultiLineString","coordinates":["[5147 coordinate pairs]"]},"distance":100,"units":"kilometers"}
+       error (434 ms): {"statusCode":400,"error":"Bad Request","message":"geometry.type must be one of LineString"}
+   ```
+
+   That is why prompt 1 tells the model to send a `LineString`.
+
+2. **A validating client can reject charging results.** The server now publishes an `outputSchema` for every tool, and the official TypeScript client checks each result against it. EV charging results carry OpenStreetMap tags as numbers where the schema says string, so the client throws:
+
+   ```text
+   [7] tools/call search_places {"category":"service.vehicle.charging_station","lat":38.878...,"lon":-97.807...,"radius_meters":50000,"limit":5}
+       client error (362 ms): Structured content does not match the tool's output schema: data/results/0/ele must be string, data/results/0/ref_other/plugshare must be string, data/results/2/ref must be string
+   ```
+
+   Cafe searches passed. We did not test whether Cursor or Claude Code validate results this strictly. If your client shows this error, the data arrived; it is the check that failed. Places Along keeps the result and notes the mismatch in its trace (Part B).
+
+3. **The route geometry is big.** This route has 5,147 coordinate pairs. In a chat client the model has to carry that line between `calculate_route` and every `measure_geometry` call, which costs a lot of context and can go wrong. If your client struggles, the app approach in Part B avoids it.
 
 ## Part B: the agent path in code
 
@@ -161,11 +189,15 @@ const { tools } = await client.listTools();
 const AGENT_TOOLS = ["geocode_address", "calculate_route", "measure_geometry", "search_places", "list_place_categories"];
 ```
 
-**Keep big geometry out of the model's context.** When `calculate_route` returns, the app stores the geometry and shows the model a reference instead: `{"geometry": {"ref": "route", "points": 198}}`. When the model later calls `measure_geometry` with `"geometry": {"ref": "route"}`, the app swaps the real line back in before the call goes to Geoapify. The trace still shows the real call. Search results are trimmed the same way, to name, address, coordinates, distance, and `place_id`.
+**Give the model simple schemas, and tidy what it sends.** `measure_geometry` publishes eight operations as one `oneOf`. On the live run, a free model given that schema sent the geometry as a JSON string and the distance as a string, and all six calls failed. The app now shows the model only the `along` branch, as a flat object schema with Geoapify's own descriptions, and parses JSON-in-a-string and numeric strings before calling. The next run's calls all succeeded.
+
+**Report schema mismatches instead of failing.** The client is created with a validator that runs the same check as the default one but only records a mismatch, which then shows in the trace (see Part A, point 2).
+
+**Keep big geometry out of the model's context.** When `calculate_route` returns, the app stores the geometry and shows the model a reference instead: `{"geometry": {"ref": "route", "points": 198}}`. When the model later calls `measure_geometry` with `"geometry": {"ref": "route"}`, the app swaps the real line back in, as a `LineString`, before the call goes to Geoapify. The trace still shows the real call. Search results are trimmed the same way, to name, address, coordinates, distance, and `place_id`.
 
 **Only trust what a tool returned.** The model's final answer is JSON with a `place_id` for every stop. The app keeps a stop only if a `search_places` result in this run returned that place, and lists any dropped names under the result. If the model's answer is unusable, the app falls back to its shared planner over the places the agent's own calls found, and says so.
 
-**No model key?** The agent path then follows a scripted plan: the same five tools in the same order, with no model. The page labels which driver ran.
+**No model key?** The agent path then follows a scripted plan: the same tools in the same order, with no model. The page labels which driver ran. The hosted demo uses the scripted plan: on our live runs, free OpenRouter models took 45 to 70 seconds and sometimes timed out before answering, which is too slow for a public page. Set `OPENROUTER_API_KEY` locally to watch a model drive it.
 
 The system prompt is in [`prompts/agent-system.md`](https://github.com/Joe-Simo/places-along/blob/main/prompts/agent-system.md).
 
@@ -212,19 +244,31 @@ Both paths hand their places to the same planner ([`plan.ts`](https://github.com
 
 ## Part D: what the comparison shows
 
-For the sample trip (coffee and EV charging, every two hours, four stops):
+The sample trip on live Geoapify data, Oct 22, 2026 (coffee and EV charging every two hours, 567 miles, three stops):
 
 | | Agent (MCP) | Direct (OpenAPI client) |
 | --- | --- | --- |
-| Geoapify calls | 2 geocode + 1 route + 4 along + 8 searches = **15** | 2 geocode + 1 route + 4 places = **7** |
+| Geoapify calls | 2 geocode + 1 route + 3 along + 6 searches = **12** | 2 geocode + 1 route + 3 places = **6** |
+| Time | about 5 s (scripted driver) | about 4 to 6 s |
+| Stop slots filled | **4 of 6** | **6 of 6** |
 | Who decides the calls | the model (or the scripted plan) | the code |
-| Search area per stop | a 20 km circle around one point | a 3 km band along the whole stretch where the stop may fall |
+| Search area per stop | a 50 km circle around one point | a 3 km band along the whole stretch where the stop may fall |
 | Grows with | stops x categories | stops |
 | Best for | open questions, exploring, changing the plan mid-conversation | a fixed product feature that has to be fast, cheap, and repeatable |
 
-The call counts come from the tests in [`test/`](https://github.com/Joe-Simo/places-along/tree/main/test), which run both paths end to end. The difference in search area matters on empty stretches of road. Around Colby, Kansas, the agent's point at six hours lands 25 to 27 km from the four chargers in Colby, outside a 20 km circle, so that stop comes back empty, while the direct path's band along the road finds both a charger and a cafe there. In the sample run (scripted agent, sample data), all 5 of the agent's picks are among the direct path's 8. You can widen the agent's radius, but that costs more calls and more results to sift.
+All 4 of the agent's picks are also among the direct path's 6, so the two paths agree where both found something. The gap is the search area. At the two-hour point the agent's circle is centered just west of Salina, Kansas. It finds six cafes, but the nearest to the road is 3.8 km off I-70 and the planner only takes places within 3 km, so coffee comes back empty. The direct path's band covers the whole stretch the stop may fall in (about 1 h 12 min to 2 h 48 min into the drive) and finds a Starbucks in Junction City 199 m off the highway, at 1 h 14 min. At four hours, in western Kansas, the only cafe within 50 km of the agent's point is in Oakley, 39 km away; the band finds Mokas Cafe in Colby, 211 m off the road, at 4 h 34 min. Each Places request returned places spread over its whole 190 km stretch, all inside the 3 km buffer.
 
-The honest summary: MCP makes the first answer fast to build and easy to change, and every step is visible. The typed REST client makes the answer cheaper and more predictable once you know the question.
+You can widen the agent's circle or search more points per stop, but each costs more calls. The honest summary: MCP makes the first answer fast to build and easy to change, and every step is visible. The typed REST client makes the answer cheaper, more complete, and more predictable once you know the question.
+
+### The app's own trace
+
+These screenshots are from the hosted demo on live data. Every call either path makes is listed with its arguments, result, and time.
+
+![Places Along on live Geoapify data: map, comparison line, and both stop lists](../public/screenshots/live-overview.png)
+
+![The agent's trace: 12 MCP tool calls, in order](../public/screenshots/live-agent-trace.png)
+
+![The direct path's trace: 6 HTTP calls](../public/screenshots/live-direct-trace.png)
 
 ## Run it yourself
 
@@ -237,7 +281,7 @@ pnpm dev            # http://localhost:3000, sample mode
 
 Without keys, the app runs in **sample mode**. The route comes from the public OSRM demo server and the places from OpenStreetMap, not from Geoapify, and the page says so. Both paths still run their real request code: the generated REST client and the official MCP client talk to small stand-ins that answer in Geoapify's documented response shapes.
 
-Add keys to go live:
+The hosted demo runs on a key from Geoapify's Open Geospatial Program. To go live yourself, get a free key at [myprojects.geoapify.com](https://myprojects.geoapify.com/) (the free plan allows 3,000 requests a day) and add it:
 
 ```bash
 cp .env.example .env.local
@@ -255,6 +299,8 @@ Checks: `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`.
 | The client lists no tools | Transport must be HTTP / Streamable HTTP. Check the server is enabled and approved in the client. |
 | Routing returns 400 | Waypoints must be `lat,lon` joined by `|`. Check your client's array style. |
 | A category is rejected | Use exact keys from `list_place_categories`, such as `catering.cafe`. |
+| `geometry.type must be one of LineString` | `measure_geometry` `along` needs a `LineString`; `calculate_route` returns a `MultiLineString`. Flatten it first. |
+| `Structured content does not match the tool's output schema` | Your client validates results against `outputSchema`, and the result broke it (seen on EV charging searches). The data did arrive; see Part A. |
 | The agent names a place that is not in the trace | Places Along drops it and lists it under the result. Ask the model to cite `place_id`s. |
 
 ## Further reading
