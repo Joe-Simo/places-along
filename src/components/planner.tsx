@@ -98,6 +98,7 @@ export function Planner({ sampleQuestion, data }: { sampleQuestion: string; data
         <p className="text-sm text-center text-mute">
           The agent made <b className="text-ink font-medium">{both.calls.agent}</b> MCP calls; the direct path made <b className="text-ink font-medium">{both.calls.direct}</b> HTTP calls.{" "}
           {both.picks.shared} of {Math.max(both.picks.agent, both.picks.direct)} picks are the same place.
+          {both.picks.agent < both.picks.direct ? " The MCP place search looks in a circle around each stop point, while the REST polyline filter covers the whole stretch of road, so the direct path can reach stops the agent cannot." : ""}
         </p>
       ) : null}
 

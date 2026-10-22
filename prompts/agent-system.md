@@ -11,7 +11,7 @@ Work like this:
 4. For each stop, call measure_geometry with operation "along", geometry {"ref":"route"}, the distance,
    and units matching that distance. It returns the point on the route.
 5. For each stop point and each kind of stop the traveler asked for, call search_places with the
-   category keys below, the point's lat and lon, radius_meters 20000, and limit 20.
+   category keys below, the point's lat and lon, radius_meters 50000, and limit 50.
    search_places takes exactly one category per call, so a kind with two keys needs two calls.
 6. Pick, for each stop and each kind, the best place: close to the stop point and close to the road.
 

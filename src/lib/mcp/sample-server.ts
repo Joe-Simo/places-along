@@ -35,13 +35,16 @@ export function callSampleTool(name: string, args: Args) {
       const w = (args.waypoints as { lat: number; lon: number }[] | undefined) ?? [];
       const r = w.length === 2 ? sampleRoute([w[0].lon, w[0].lat], [w[1].lon, w[1].lat]) : null;
       if (!r) return fail("Sample mode only knows the drive between Lawrence, KS and Denver, CO.");
-      const geometry = args.geometry_scope === "none" ? undefined : { type: "LineString", coordinates: r.line };
+      // Like the live server (seen Oct 22, 2026): a one-part MultiLineString.
+      const geometry = args.geometry_scope === "none" ? undefined : { type: "MultiLineString", coordinates: [r.line] };
       return ok({ distance: r.distanceM, units: "metric", distance_units: "meters", time: r.durationS, time_units: "seconds", waypoints: w, legs: [{ distance: r.distanceM, time: r.durationS }], ...(geometry ? { geometry } : {}) });
     }
     case "measure_geometry": {
       if (args.operation !== "along") return fail("Sample mode implements measure_geometry with operation \"along\" only.");
+      // The live server accepts only a LineString here and answers anything else with this 400.
+      if ((args.geometry as { type?: string } | undefined)?.type !== "LineString") return fail(JSON.stringify({ statusCode: 400, error: "Bad Request", message: "geometry.type must be one of LineString" }));
       const line = lineOf(args.geometry);
-      if (!line) return fail("measure_geometry along needs a LineString geometry.");
+      if (!line) return fail(JSON.stringify({ statusCode: 400, error: "Bad Request", message: "geometry must be a GeoJSON geometry object" }));
       const unit = String(args.units ?? "kilometers");
       const factor = /^met/.test(unit) ? 1 : /^mile/.test(unit) ? 1609.344 : 1000;
       const at = pointAlong(line, cumulative(line), Number(args.distance) * factor);

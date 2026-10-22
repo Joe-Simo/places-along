@@ -31,9 +31,9 @@ export default function Home() {
         {s.data === "sample" ? (
           <p>Sample data, not Geoapify responses: the route is from the public OSRM demo server and the places from OpenStreetMap (data &copy; OpenStreetMap contributors, ODbL). Both paths run their real request code against it. With a <code>GEOAPIFY_API_KEY</code>, they call Geoapify instead.</p>
         ) : (
-          <p>Data from <a className="underline" href="https://www.geoapify.com/">Geoapify</a>, built on OpenStreetMap (&copy; OpenStreetMap contributors).</p>
+          <p>Live data from <a className="underline" href="https://www.geoapify.com/">Geoapify</a>, built on OpenStreetMap (&copy; OpenStreetMap contributors). This demo runs on a free key from Geoapify&apos;s Open Geospatial Program, so live runs share a daily allowance; repeated questions are answered from a one-hour cache.</p>
         )}
-        <p>{s.model ? "The agent is driven by a free open model on OpenRouter; its answer only keeps places a Geoapify tool returned." : "No model key is set, so the agent path follows a scripted plan with the same MCP tools."} Places Along is an independent project, not made by Geoapify. MIT licensed.</p>
+        <p>{s.model ? "The agent is driven by a free open model on OpenRouter; its answer only keeps places a Geoapify tool returned." : "The agent path follows a scripted plan with the same MCP tools, so it answers in seconds; a model can drive it when you run it yourself with an OpenRouter key."} Places Along is an independent project, not made by Geoapify. MIT licensed.</p>
       </footer>
     </main>
   );

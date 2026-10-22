@@ -1,10 +1,38 @@
-import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
+import { Client, StreamableHTTPClientTransport, type JsonSchemaValidator, type jsonSchemaValidator } from "@modelcontextprotocol/client";
+import { AjvJsonSchemaValidator } from "@modelcontextprotocol/client/validators/ajv";
 import { asObjectSchema, sampleMcpFetch } from "./sample-server";
 
 export const GEOAPIFY_MCP_URL = "https://api.geoapify.com/v1/mcp";
 
 export interface McpTool { name: string; description?: string; inputSchema: Record<string, unknown> }
-export interface McpOutcome { ok: boolean; structured: Record<string, unknown> | null; text: string; ms: number }
+export interface McpOutcome {
+  ok: boolean;
+  structured: Record<string, unknown> | null;
+  text: string;
+  ms: number;
+  /** Set when the result did not match the tool's published outputSchema. The result is still used. */
+  schemaMismatch?: string;
+}
+
+/**
+ * The official client checks every structured result against the tool's outputSchema once it has
+ * seen tools/list. Live on Oct 22, 2026, Geoapify's search_places results broke their own schema
+ * (fields such as ref, ele and ref_other.* declared as strings arrive as numbers), which the
+ * client turns into a hard error. This validator runs the same Ajv check, records what failed,
+ * and lets the result through, so the mismatch shows in the trace instead of killing the run.
+ */
+class ReportingValidator implements jsonSchemaValidator {
+  private inner = new AjvJsonSchemaValidator();
+  last: string | null = null;
+  getValidator<T>(schema: Parameters<jsonSchemaValidator["getValidator"]>[0]): JsonSchemaValidator<T> {
+    const check = this.inner.getValidator<T>(schema);
+    return (input: unknown): ReturnType<JsonSchemaValidator<T>> => {
+      const r = check(input);
+      if (!r.valid) this.last = r.errorMessage;
+      return { valid: true as const, data: input as T, errorMessage: undefined };
+    };
+  }
+}
 export interface McpSession {
   tools(): Promise<McpTool[]>;
   call(name: string, args: Record<string, unknown>): Promise<McpOutcome>;
@@ -21,7 +49,8 @@ export async function connectGeoapifyMcp(apiKey: string | null, fetchImpl?: type
     requestInit: { headers: apiKey ? { "x-api-key": apiKey } : {} },
     fetch: fetchImpl ?? (apiKey ? fetch : sampleMcpFetch),
   });
-  const client = new Client({ name: "places-along", version: "0.1.0" });
+  const validator = new ReportingValidator();
+  const client = new Client({ name: "places-along", version: "0.1.0" }, { jsonSchemaValidator: validator });
   await client.connect(transport);
   return {
     async tools() {
@@ -38,12 +67,14 @@ export async function connectGeoapifyMcp(apiKey: string | null, fetchImpl?: type
     },
     async call(name, args) {
       const started = Date.now();
+      validator.last = null;
       try {
         const r = await client.callTool({ name, arguments: args });
         const text = (r.content as { type: string; text?: string }[] | undefined)?.find((c) => c.type === "text")?.text ?? "";
         let structured = (r.structuredContent as Record<string, unknown> | undefined) ?? null;
         if (!structured && text.startsWith("{")) structured = JSON.parse(text) as Record<string, unknown>;
-        return { ok: !r.isError, structured, text, ms: Date.now() - started };
+        const schemaMismatch = validator.last ?? undefined;
+        return { ok: !r.isError, structured, text, ms: Date.now() - started, ...(schemaMismatch ? { schemaMismatch } : {}) };
       } catch (err) {
         return { ok: false, structured: null, text: err instanceof Error ? err.message : String(err), ms: Date.now() - started };
       }

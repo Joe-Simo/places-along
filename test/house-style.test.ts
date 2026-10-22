@@ -12,8 +12,8 @@ function files(dir: string): string[] {
 }
 
 describe("house style", () => {
-  it("has no em dashes anywhere in our own files", () => {
-    const offenders = files(".").filter((f) => !f.startsWith("openapi") && readFileSync(f, "utf8").includes("\u2014"));
+  it("has no em or en dashes anywhere in our own files", () => {
+    const offenders = files(".").filter((f) => !f.startsWith("openapi") && /[\u2013\u2014]/.test(readFileSync(f, "utf8")));
     expect(offenders).toEqual([]);
   });
 });

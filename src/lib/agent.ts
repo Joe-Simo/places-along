@@ -9,6 +9,9 @@ import { CATEGORIES, CATEGORY_ORDER, categoryOf } from "./types";
 export const AGENT_TOOLS = ["geocode_address", "calculate_route", "measure_geometry", "search_places", "list_place_categories"];
 const MAX_TURNS = 12;
 const MAX_TOOL_CALLS = 40;
+/** One search circle per stop. 50 km covers most of a stop window on a highway; the planner then keeps only places within 3 km of the road. */
+const SEARCH_RADIUS_M = 50_000;
+const SEARCH_LIMIT = 50;
 
 type Args = Record<string, unknown>;
 
@@ -37,7 +40,7 @@ class Notebook {
 
   constructor(private trip: Trip) {}
 
-  record(name: string, args: Args, ok: boolean, structured: Record<string, unknown> | null, text: string, ms: number) {
+  record(name: string, args: Args, ok: boolean, structured: Record<string, unknown> | null, text: string, ms: number, schemaMismatch?: string) {
     this.calls++;
     const s = structured ?? {};
     let summary = ok ? "ok" : text.slice(0, 140) || "failed";
@@ -76,6 +79,7 @@ class Notebook {
       summary = `${results.length} \u00d7 ${args.category}`;
     }
     if (ok && name === "list_place_categories") summary = `${s.count ?? "?"} categories`;
+    if (schemaMismatch) summary += " (result did not match the tool's outputSchema; used anyway)";
     this.trace.push({ path: "agent", kind: "mcp", name, input: shorten(args), ok, ms, summary });
   }
 }
@@ -125,14 +129,46 @@ export function forModel(name: string, ok: boolean, s: Record<string, unknown> |
   return JSON.stringify(s).slice(0, 2000);
 }
 
-/** Swap {"ref":"route"} (or "route") for the stored route geometry before a call goes to Geoapify. */
-function resolveRefs(args: Args, nb: Notebook): Args {
+const NUMERIC_ARGS = new Set(["distance", "lat", "lon", "radius_meters", "limit"]);
+
+/**
+ * Tidy a model's tool arguments before they go to Geoapify. Seen live (Oct 22, 2026): free models
+ * sometimes send a geometry as a JSON string ("{\"ref\": \"route\"}") and numbers as strings
+ * ("235992"). Strings that hold JSON are parsed, numeric strings become numbers for numeric
+ * arguments, and {"ref":"route"} (or "route") is swapped for the stored route geometry.
+ */
+export function resolveRefs(args: Args, geometry: LonLat[] | null): Args {
   const out: Args = { ...args };
-  for (const [k, v] of Object.entries(out)) {
+  for (const [k, raw] of Object.entries(out)) {
+    let v: unknown = raw;
+    if (typeof v === "string" && /^\s*[{[]/.test(v)) {
+      try {
+        v = JSON.parse(v);
+      } catch {
+        // leave it as the model sent it; Geoapify's error goes back to the model
+      }
+    }
+    if (typeof v === "string" && NUMERIC_ARGS.has(k) && v.trim() !== "" && Number.isFinite(Number(v))) v = Number(v);
     const isRef = v === "route" || v === "$route" || (typeof v === "object" && v !== null && (v as { ref?: string }).ref === "route");
-    if (isRef && nb.geometry) out[k] = { type: "LineString", coordinates: nb.geometry };
+    out[k] = isRef && geometry ? { type: "LineString", coordinates: geometry } : v;
   }
   return out;
+}
+
+/**
+ * The parameters the model sees for a tool. measure_geometry publishes a top-level oneOf with
+ * eight operations; the model only needs "along", and a flat object schema is what tool-calling
+ * APIs handle best, so the model gets that one branch (Geoapify's own wording, unchanged).
+ */
+export function modelParameters(name: string, schema: Record<string, unknown>): Record<string, unknown> {
+  const branches = (schema.oneOf as Record<string, unknown>[] | undefined) ?? [];
+  const along = branches.find((b) => b.title === "along");
+  if (name === "measure_geometry" && along) {
+    const { title: _title, ...rest } = along;
+    void _title;
+    return { ...rest, type: "object" };
+  }
+  return schema.type === "object" ? schema : { type: "object", ...schema };
 }
 
 /** Group validated picks into stops, timing each from the route the agent itself fetched. */
@@ -182,7 +218,7 @@ export function validateAnswer(content: string, nb: Notebook | { places: Map<str
 async function scripted(o: AgentOptions, nb: Notebook) {
   const call = async (name: string, args: Args) => {
     const r = await o.mcp.call(name, args);
-    nb.record(name, args, r.ok, r.structured, r.text, r.ms);
+    nb.record(name, args, r.ok, r.structured, r.text, r.ms, r.schemaMismatch);
     return r;
   };
   const ends = await Promise.all([o.trip.from, o.trip.to].map((query) => call("geocode_address", { query, limit: 1 })));
@@ -199,7 +235,7 @@ async function scripted(o: AgentOptions, nb: Notebook) {
   for (const c of centers) {
     const pt = c.structured ? pointOf(c.structured) : null;
     if (!pt) continue;
-    for (const cat of o.trip.categories) for (const key of CATEGORIES[cat].geoapify) searches.push(call("search_places", { category: key, lat: pt[1], lon: pt[0], radius_meters: 20000, limit: 20 }));
+    for (const cat of o.trip.categories) for (const key of CATEGORIES[cat].geoapify) searches.push(call("search_places", { category: key, lat: pt[1], lon: pt[0], radius_meters: SEARCH_RADIUS_M, limit: SEARCH_LIMIT }));
   }
   await Promise.all(searches);
 }
@@ -207,7 +243,7 @@ async function scripted(o: AgentOptions, nb: Notebook) {
 async function modelDriven(o: AgentOptions, nb: Notebook, deadline: number) {
   const tools: ToolSpec[] = (await o.mcp.tools())
     .filter((t) => AGENT_TOOLS.includes(t.name))
-    .map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.inputSchema.type === "object" ? t.inputSchema : { type: "object", ...t.inputSchema } } }));
+    .map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: modelParameters(t.name, t.inputSchema) } }));
   const messages: ChatMessage[] = [{ role: "system", content: o.systemPrompt }, { role: "user", content: o.question }];
   let model = "";
   for (let turn = 0; turn < MAX_TURNS && Date.now() < deadline; turn++) {
@@ -228,9 +264,9 @@ async function modelDriven(o: AgentOptions, nb: Notebook, deadline: number) {
         }
         const name = tc.function.name;
         if (!AGENT_TOOLS.includes(name)) return { id: tc.id, content: JSON.stringify({ error: `Tool ${name} is not enabled.` }) };
-        const real = resolveRefs(args, nb);
+        const real = resolveRefs(args, nb.geometry);
         const r = await o.mcp.call(name, real);
-        nb.record(name, real, r.ok, r.structured, r.text, r.ms);
+        nb.record(name, real, r.ok, r.structured, r.text, r.ms, r.schemaMismatch);
         return { id: tc.id, content: forModel(name, r.ok, r.structured, r.text) };
       }),
     );

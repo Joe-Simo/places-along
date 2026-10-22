@@ -101,3 +101,33 @@ describe("agent path", () => {
     expect(JSON.parse(forModel("search_places", true, s, ""))).toEqual({ category: "catering.cafe", count: 1, results: [{ place_id: "p1", name: "Cafe", formatted: "Cafe, Main St", lat: 1, lon: 2, distance: 30 }] });
   });
 });
+
+describe("live-shape fixes (seen against Geoapify on Oct 22, 2026)", () => {
+  it("turns a model's JSON-string geometry and numeric strings into real arguments", async () => {
+    const { resolveRefs } = await import("@/lib/agent");
+    const line: [number, number][] = [[-95.2, 38.9], [-96, 39]];
+    const out = resolveRefs({ operation: "along", geometry: '{"ref": "route"}', distance: "235992", units: "meters" }, line);
+    expect(out).toEqual({ operation: "along", geometry: { type: "LineString", coordinates: line }, distance: 235992, units: "meters" });
+    expect(resolveRefs({ category: "catering.cafe", lat: "38.9", lon: -97 }, null)).toEqual({ category: "catering.cafe", lat: 38.9, lon: -97 });
+  });
+
+  it("shows the model only the along branch of measure_geometry, as a flat object schema", async () => {
+    const { modelParameters } = await import("@/lib/agent");
+    const schema = { type: "object", oneOf: [{ type: "object", title: "area", properties: { operation: { const: "area" } } }, { type: "object", title: "along", required: ["operation", "geometry", "distance"], properties: { operation: { const: "along" }, distance: { type: "number" } } }] };
+    const p = modelParameters("measure_geometry", schema);
+    expect(p.oneOf).toBeUndefined();
+    expect(p.required).toEqual(["operation", "geometry", "distance"]);
+    expect(modelParameters("search_places", { type: "object", properties: {} })).toEqual({ type: "object", properties: {} });
+  });
+
+  it("sample server rejects a MultiLineString in along, like the live one, and the agent still works", async () => {
+    const mcp = await connectGeoapifyMcp(null);
+    const r = await mcp.call("measure_geometry", { operation: "along", geometry: { type: "MultiLineString", coordinates: [[[-95, 39], [-96, 39]]] }, distance: 10, units: "kilometers" });
+    expect(r.ok).toBe(false);
+    expect(r.text).toContain("geometry.type must be one of LineString");
+    const result = await runAgent({ question: SAMPLE_QUESTION, trip, mcp, data: "sample", chat: null, systemPrompt });
+    await mcp.close();
+    expect(result.error).toBeUndefined();
+    expect(result.stops.some((s) => s.picks.length > 0)).toBe(true);
+  });
+});

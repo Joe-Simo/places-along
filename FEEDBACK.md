@@ -1,9 +1,11 @@
 # Feedback on Geoapify's OpenAPI specs and MCP tools
 
-Written while building Places Along (Oct 21, 2026). Each item says how we know it:
+Written while building Places Along (Oct 21 and 22, 2026). Each item says how we know it:
 
-- **Observed**: we saw it ourselves, in the spec files, in generated code, in a test, or in an HTTP response.
-- **Unverified**: an assumption the code makes that still needs a live run with a key. These are listed separately at the end and will be checked on key day.
+- **Observed**: we saw it ourselves, in the spec files, in generated code, in a test, or in a response from the live API. Live items carry the date we saw them.
+- **Unverified**: something we did not test. Listed at the end.
+
+The live checks ran on Oct 22, 2026 with the program key, through `pnpm smoke` (`scripts/smoke.ts`) plus a few direct curl calls.
 
 Spec versions: Forward Geocoding 1.1.2, Routing 1.2.1, Places 2.2.1, Static Maps 1.1.1, MCP tool specs 1.1.2, from [geoapify-openapi-specs](https://github.com/geoapify/geoapify-openapi-specs) commit `dd07a5f` (Oct 16, 2026). Generator: openapi-typescript 7.13.0 with openapi-fetch 0.17.0. MCP client: `@modelcontextprotocol/client` 2.3.1.
 
@@ -24,17 +26,17 @@ Spec versions: Forward Geocoding 1.1.2, Routing 1.2.1, Places 2.2.1, Static Maps
 
 4. **Defaults become required fields in openapi-typescript's default mode** (observed). Request fields with a `default`, such as `limit`, `offset`, and `lang` on `PlacesPostRequest`, or `zoom`, `width`, `height` on `StaticMapRequest`, come out as required unless you pass `--default-non-nullable=false`. Worth one line in the [client generation guide](https://apidocs.geoapify.com/how-to/api-tooling-ai/generate-openapi-clients-sdks/).
 
-5. **`pipeDelimited` arrays and type-only clients** (observed in our code; server behavior unverified). openapi-fetch builds requests from types, not from the spec's parameter styles, so by default it sends `waypoints=a&waypoints=b`. Our test checks that we send one `waypoints=lat,lon|lat,lon` after setting `querySerializer: { array: { style: "pipeDelimited", explode: false } }`. A note in the routing docs or the generation guide would help. Whether the API also accepts repeated `waypoints` parameters is unverified.
+5. **`pipeDelimited` arrays and type-only clients** (observed). openapi-fetch builds requests from types, not from the spec's parameter styles, so by default it sends `waypoints=a&waypoints=b`. Our test checks that we send one `waypoints=lat,lon|lat,lon` after setting `querySerializer: { array: { style: "pipeDelimited", explode: false } }`. Live on Oct 22, 2026, the Routing API accepted both forms and returned the same two waypoints, so the default is forgiving. The spec could say so, or the docs could note that repeated parameters also work.
 
 6. **Coordinate order changes between APIs** (observed in spec). Routing `waypoints` are `latitude,longitude`; Places filters and GeoJSON are `[longitude, latitude]`; the MCP tools use named `lat` and `lon` (the clearest of the three). The routing description says it plainly, which helped; a short "coordinate order" box across the docs would catch more people.
 
-7. **No highway rest area category** (observed in spec; live list unverified). The `PlaceCategory` enum in Places 2.2.1 has 833 values and none for a highway rest area or service area. For "rest" stops we used `amenity.toilet` and `leisure.picnic.picnic_site`. For road-trip use, a `highway.rest_area` (or similar) category would be valuable. `pnpm smoke` checks the live `list_place_categories` output for this.
+7. **No highway rest area category** (observed in spec, and live on Oct 22, 2026). The `PlaceCategory` enum in Places 2.2.1 has 833 values and none for a highway rest area or service area. The live `list_place_categories` tool also returns 833 categories, and the only rest-like ones are `amenity.toilet` (and `.changing_table`), `building.toilet`, and the `leisure.picnic.*` family. For "rest" stops we used `amenity.toilet` and `leisure.picnic.picnic_site`. For road-trip use, a `highway.rest_area` (or similar) category would be valuable.
 
 8. **Response types are a union of every media type** (observed). The geocoding and routing 200 responses list GeoJSON, JSON, and XML bodies, so the generated success type is their union even when the request sets `format=json`. That is correct OpenAPI, but callers must narrow by hand. Not a bug; worth a sentence in the generation guide.
 
 ## MCP tools
 
-1. **Four tool input schemas are not `type: "object"`** (observed in the specs and in a test). In the focused MCP tool specs, `combine_geometries`, `evaluate_spatial_relation`, `measure_geometry`, and `transform_geometry` have an input schema that is a top-level `oneOf` with no `type`. The MCP specification requires a tool's `inputSchema` to be an object schema, and the official TypeScript client (`@modelcontextprotocol/client` 2.3.1) rejects the whole `tools/list` response with `Invalid input: expected "object"` at `tools[n].inputSchema.type`. We hit this when our sample server served the schemas verbatim. OpenAI-style function calling also expects `type: "object"` at the top. Adding `"type": "object"` beside the `oneOf` fixes both. Whether the live server sends the same schemas is unverified; Places Along normalizes them either way and falls back to a direct `tools/list` if the client rejects the list.
+1. **Four tool input schemas are not `type: "object"` in the published specs** (observed in the specs and in a test; the live server is fine). In the focused MCP tool specs, `combine_geometries`, `evaluate_spatial_relation`, `measure_geometry`, and `transform_geometry` have an input schema that is a top-level `oneOf` with no `type`. The MCP specification requires a tool's `inputSchema` to be an object schema, and the official TypeScript client (`@modelcontextprotocol/client` 2.3.1) rejects the whole `tools/list` response with `Invalid input: expected "object"` at `tools[n].inputSchema.type`. We hit this when our sample server served the schemas verbatim. OpenAI-style function calling also expects `type: "object"` at the top. Adding `"type": "object"` beside the `oneOf` fixes both. Live on Oct 22, 2026, the server's `tools/list` (11 tools) sends `"type": "object"` on all of them, and the official client accepts the list, so only the files in `geoapify-openapi-specs` lag behind the server. Places Along still normalizes schemas, in case a client reads the files.
 
 2. **`search_places` takes one category and one point** (observed in spec). There is no categories list and no polyline or along-route filter, although the Places API has both. A route question therefore costs stops x categories calls over MCP (8 for our sample) against stops over REST (4). Accepting `categories` as an array, and a `polyline` filter with a buffer, would make the MCP tool match the API's best feature.
 
@@ -42,12 +44,26 @@ Spec versions: Forward Geocoding 1.1.2, Routing 1.2.1, Places 2.2.1, Static Maps
 
 4. **Discovery needs a key** (observed with curl, Oct 21, 2026). `initialize` and `tools/list` without a key return HTTP 401 `{"statusCode":401,"error":"Unauthorized","message":"Invalid apiKey"}`. The docs say both cost zero credits; allowing them without a key would let MCP clients, registries, and reviewers see the tool schemas before signing up.
 
-5. **`calculate_route` geometry type is not pinned down** (observed in spec). The output schema says "Optional route geometry in the requested geometry format" and the input says "GeoJSON geometry object", but not whether it is a `LineString` or `MultiLineString` (the REST API returns `MultiLineString`). Our harness accepts both. Naming the type in the output schema would help clients that validate.
+5. **`calculate_route` returns a `MultiLineString`, and `measure_geometry` `along` refuses one** (observed live, Oct 22, 2026). With `geometry_format: "geojson"`, the route geometry is a `MultiLineString` with one part. Passing it straight to `measure_geometry` with `operation: "along"` fails with HTTP 400 `geometry.type must be one of LineString`. So the obvious two-step plan (route, then points along the route) breaks unless the client flattens the geometry first, and a model in a chat client has no way to do that. Either accepting a single-part `MultiLineString` in `along`, or naming the geometry type in `calculate_route`'s output schema (and offering `LineString` output), would fix it. Places Along flattens the route before every `along` call.
 
-## Unverified until a live run (checked by `pnpm smoke`)
+6. **`search_places` results do not match their own output schema** (observed live, Oct 22, 2026). All 11 tools now publish an `outputSchema`, and the official TypeScript client checks every structured result against it once it has read `tools/list`. EV charging results fail that check: for a search near Salina, KS, the client reported `data/results/0/ele must be string, data/results/0/ref_other/plugshare must be string, data/results/2/ref must be string`. The OpenStreetMap tags arrive as numbers where the schema says string. The client turns that into a hard error, so any MCP client that validates loses the whole call. Loosening those fields to `["string", "number"]` (or leaving raw OSM tags untyped) would fix it. Places Along now runs the same check but only reports the mismatch in its trace and keeps the result.
 
-- The live `tools/list` input schemas (item MCP 1) and whether tools also send `outputSchema`.
-- Protocol version negotiation between the 2.3.1 client and the server (Geoapify's docs say the endpoint defaults to `2025-06-18`).
-- The live shapes of `calculate_route` geometry and `measure_geometry` `along` output (our harness reads a Point, a Feature, or `{type:"geojson", data}`).
-- That `POST /v2/places` with a 3 km polyline buffer and `limit: 500` returns places across the whole stretch, not just one end.
-- Real latency and credit use per run for each path.
+7. **Top-level `oneOf` schemas confuse free models** (observed live with OpenRouter free models, Oct 22, 2026). Even with `"type": "object"` present, a model given `measure_geometry`'s eight-branch `oneOf` sent `geometry` as a JSON string (`"{\"ref\": \"route\"}"`) and `distance` as a string (`"235992"`), and the server rejected all six calls with `geometry must be a GeoJSON geometry object`. Giving the model only the `along` branch, as a flat object schema with Geoapify's own descriptions, fixed it on the next run. Splitting multi-operation tools into one tool per operation (for example `measure_along`) would help every client, not just ours. Places Along also parses JSON-in-a-string arguments and numeric strings before calling.
+
+8. **The server always answers protocol version `2025-06-18`** (observed live, Oct 22, 2026). `initialize` requests for `2024-11-05`, `2025-06-18`, and `2025-11-25` all got `protocolVersion: "2025-06-18"` back (server `geoapify-api-gateway-mcp` 0.1.0). The 2.3.1 TypeScript client accepts that and works. This matches the docs; we note it so client authors know newer protocol features are not available yet.
+
+9. **No usage or rate-limit headers** (observed live, Oct 22, 2026). Neither the REST APIs nor the MCP endpoint return headers such as `X-RateLimit-Remaining` or credits used. With a 3,000 requests a day free plan, an app that wants to stay under it has to count its own calls, which is what Places Along does. A remaining-credits header would make that exact.
+
+## Live run numbers (Oct 22, 2026)
+
+From `pnpm smoke` on the sample trip (Lawrence, KS to Denver, CO, coffee and EV charging every two hours; 567 mi, 7 h 44 min, 3 stops):
+
+- **Direct path**: 6 requests (2 geocodes, 1 route, 3 `POST /v2/places`), about 4 to 6 s end to end, 6 of 6 stop slots filled. Each Places polyline request (3 km buffer, `limit: 500`) returned places spread across its whole 190 km stretch of road, all within the buffer (farthest 1.5 km off the line), so the polyline filter does what the spec says.
+- **Agent path, scripted driver**: 12 MCP tool calls (2 geocodes, 1 route, 3 `along`, 6 searches), about 5 s, 4 of 6 slots filled. The gap is the tool shape in MCP 2: `search_places` searches a circle around one point, so a cafe 60 km down the road from the stop point is out of reach, while the REST polyline filter covers the whole stretch.
+- **Agent path, model driver** (OpenRouter free models, local run only): the tool calls work after the fixes above, but free models took 45 to 70 s per run and sometimes timed out before a final answer. The hosted demo therefore uses the scripted driver.
+
+## Unverified
+
+- How many credits each run used. The API returns no usage headers (MCP 9) and we did not open the project dashboard, so we count requests, not credits.
+- The model driver with paid or larger models. We only tried free OpenRouter models.
+- The EU server, Static Maps, and every MCP tool we did not call (`geocode_structured_address`, `reverse_geocode_coordinates`, `calculate_route_matrix`, `combine_geometries`, `evaluate_spatial_relation`, `transform_geometry`).

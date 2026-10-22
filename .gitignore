@@ -47,3 +47,4 @@ next-env.d.ts
 AGENTS.md
 CLAUDE.md
 smoke-report.json
+.scratch/

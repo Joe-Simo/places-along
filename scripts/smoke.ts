@@ -45,9 +45,16 @@ const route = await mcp.call("calculate_route", { waypoints: [{ lat: 38.9719, lo
 const geom = route.structured?.geometry as { type?: string; coordinates?: unknown[] } | undefined;
 report.calculateRoute = { ok: route.ok, geometryType: geom?.type ?? null, points: Array.isArray(geom?.coordinates) ? geom!.coordinates.length : null, distanceUnits: route.structured?.distance_units, timeUnits: route.structured?.time_units };
 if (geom) {
-  const along = await mcp.call("measure_geometry", { operation: "along", geometry: geom, distance: 100, units: "kilometers" });
-  report.measureAlong = { ok: along.ok, shape: along.ok ? JSON.stringify(along.structured).slice(0, 300) : along.text.slice(0, 300) };
+  // calculate_route returns a MultiLineString; measure_geometry "along" accepts only a LineString.
+  const asIs = await mcp.call("measure_geometry", { operation: "along", geometry: geom, distance: 100, units: "kilometers" });
+  report.measureAlongMultiLine = { ok: asIs.ok, shape: (asIs.ok ? JSON.stringify(asIs.structured) : asIs.text).slice(0, 300) };
+  const line = geom.type === "MultiLineString" ? (geom.coordinates as unknown[][]).flat() : geom.coordinates;
+  const along = await mcp.call("measure_geometry", { operation: "along", geometry: { type: "LineString", coordinates: line }, distance: 100, units: "kilometers" });
+  report.measureAlong = { ok: along.ok, shape: (along.ok ? JSON.stringify(along.structured) : along.text).slice(0, 300) };
 }
+// After tools/list the official client validates results against outputSchema; does search_places pass?
+const ev = await mcp.call("search_places", { category: "service.vehicle.charging_station", lat: 38.878, lon: -97.808, radius_meters: 50000, limit: 50 });
+report.searchPlacesOutputSchema = { ok: ev.ok, count: ev.structured?.count ?? null, mismatch: ev.schemaMismatch ?? null };
 const cats = await mcp.call("list_place_categories", {});
 const all = (cats.structured?.categories as string[] | undefined) ?? [];
 report.categories = { count: all.length, restLike: all.filter((c) => /rest|toilet|picnic/.test(c) && !c.includes("restaurant")), ourKeysPresent: Object.fromEntries(CATEGORY_ORDER.flatMap((c) => CATEGORIES[c].geoapify).map((k) => [k, all.includes(k)])) };
