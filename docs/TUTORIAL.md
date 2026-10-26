@@ -9,6 +9,16 @@ Part A needs no code: it connects the Geoapify MCP server to two clients we ran,
 
 > **What was actually tested (Oct 22, 2026, with a live Geoapify key).** Everything in Parts B to D ran against the live Geoapify APIs and MCP server, and the [hosted demo](https://places-along.vercel.app) runs on live data. In Part A, **MCP Inspector and OpenCode were run**; their screenshots and transcripts are real, and the results below are what the server returned. **Cursor and Claude Code were not run.** Their config follows Geoapify's [client setup guide](https://apidocs.geoapify.com/how-to/api-tooling-ai/connect-ai-client-mcp/) and each client's documented format. Keys are hidden everywhere.
 
+**Contents**
+
+- [What you need](#what-you-need)
+- [Part A: connect the Geoapify MCP server to your AI client](#part-a-connect-the-geoapify-mcp-server-to-your-ai-client), with [the prompts](#the-prompts) and [what the calls really return](#what-those-calls-really-return)
+- [Part B: the agent path in code](#part-b-the-agent-path-in-code)
+- [Part C: the direct path with a typed client from OpenAPI](#part-c-the-direct-path-with-a-typed-client-from-openapi)
+- [Part D: what the comparison shows](#part-d-what-the-comparison-shows)
+- [Going public: protect your key and the free plan](#going-public-protect-your-key-and-the-free-plan)
+- [Run it yourself](#run-it-yourself) and [Troubleshooting](#troubleshooting)
+
 ## What you need
 
 - A Geoapify API key. Create a project at [myprojects.geoapify.com](https://myprojects.geoapify.com/) and copy its key.
@@ -374,6 +384,8 @@ These screenshots are from the hosted demo on live data. Every call either path 
 
 ![The direct path's trace: 6 HTTP calls](../public/screenshots/live-direct-trace.png)
 
+The page also turns a plan into something you can drive. Each stop's name links to the place on OpenStreetMap, using the coordinates Geoapify returned, and each column ends with a Google Maps driving link through its picks in order. That link needs no key: it is a [Maps URL](https://developers.google.com/maps/documentation/urls/get-started) built from the stops' `lat,lon` ([`src/lib/links.ts`](https://github.com/Joe-Simo/places-along/blob/main/src/lib/links.ts)), capped at the nine waypoints Maps accepts. Every run also writes the question into the address bar as `?q=`, so a plan can be shared as a link, for example [Seattle to Portland, coffee every hour](https://places-along.vercel.app/?q=Seattle%2C%20WA%20to%20Portland%2C%20OR.%20Coffee%20every%20hour%3F).
+
 ## Going public: protect your key and the free plan
 
 A public demo on a free key needs three guards. Places Along uses all of them.
@@ -427,6 +439,7 @@ To share the demo's daily counters across server instances, set `DATABASE_URL` t
 | A category is rejected | Use exact keys from `list_place_categories`, such as `catering.cafe`. |
 | `geometry.type must be one of LineString` | `measure_geometry` `along` needs a `LineString`; `calculate_route` returns a `MultiLineString`. Flatten it first. |
 | `Structured content does not match the tool's output schema` | Your client validates results against `outputSchema`, and the result broke it (seen on EV charging searches). The data did arrive; see Part A. |
+| "Couldn't find" a start or end | Write the place with its state or country, like `Denver, CO`, and end the trip with a full stop or a comma before the kinds of stop. |
 | The agent names a place that is not in the trace | Places Along drops it and lists it under the result. Ask the model to cite `place_id`s. |
 | "Today's live demo allowance is used up" | The daily request budget or your per-visitor runs are spent. Run it locally with your own key, or raise `PLACES_ALONG_DAILY_GEOAPIFY_REQUESTS` and `PLACES_ALONG_VISITOR_RUNS_PER_DAY`. |
 

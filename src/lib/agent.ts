@@ -223,7 +223,7 @@ async function scripted(o: AgentOptions, nb: Notebook) {
   };
   const ends = await Promise.all([o.trip.from, o.trip.to].map((query) => call("geocode_address", { query, limit: 1 })));
   const pts = ends.map((e) => ((e.structured?.results as { lat: number; lon: number }[] | undefined) ?? [])[0]);
-  if (!pts[0] || !pts[1]) throw new Error(`Couldn't find ${!pts[0] ? o.trip.from : o.trip.to}.${o.data === "sample" ? " Sample mode knows only Lawrence, KS and Denver, CO." : ""}`);
+  if (!pts[0] || !pts[1]) throw new Error(`Couldn't find ${!pts[0] ? o.trip.from : o.trip.to}.${o.data === "sample" ? " Sample mode knows only Lawrence, KS and Denver, CO." : " Try a city with its state or country, like \"Denver, CO\"."}`);
   await call("calculate_route", { waypoints: pts.map(({ lat, lon }) => ({ lat, lon })), mode: "drive", geometry_scope: "route", geometry_format: "geojson" });
   if (!nb.route || !nb.geometry) throw new Error("The route came back without geometry.");
   const route = nb.route;

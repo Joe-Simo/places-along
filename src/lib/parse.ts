@@ -12,7 +12,9 @@ const KINDS: [Category, RegExp][] = [
 export const DEFAULT_EVERY = 120;
 const LEAD = /^(?:(?:i'?m|we'?re|we are|i am|driving|drive|road\s*trip(?:ping)?|heading|going|travel(?:l)?ing|from)\s+)+/i;
 const PLACE = String.raw`[\p{L}0-9 .'\-]+?(?:,\s*\p{L}{2}\b)?`;
-const ROUTE = new RegExp(String.raw`(${PLACE})\s+(?:to|->|\u2192)\s+(${PLACE})(?=\s*[,?.;!]|\s+(?:where|and|with|stopping|every|for|via)\b|\s*$)`, "iu");
+/** A full stop ends a place name, except after an abbreviation such as "St. Louis" or "Ft. Collins". */
+const END_DOT = String.raw`(?<!\b(?:St|Ste|Ft|Mt|Pt))\.(?=\s|$)`;
+const ROUTE = new RegExp(String.raw`(${PLACE})\s+(?:to|->|\u2192)\s+(${PLACE})(?=\s*[,?;!]|${END_DOT}|\s+(?:where|and|with|stopping|every|for|via)\b|\s*$)`, "iu");
 
 export type ParseResult = { ok: true; trip: Trip } | { ok: false; error: string };
 

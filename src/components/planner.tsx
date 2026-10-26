@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { compare } from "@/lib/compare";
+import { EXAMPLES } from "@/lib/examples";
 import { formatDuration } from "@/lib/geo";
+import { shareUrl } from "@/lib/links";
 import { parseTrip } from "@/lib/parse";
 import type { RunResult } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
@@ -19,13 +21,15 @@ async function ask(path: "agent" | "direct", question: string): Promise<RunResul
   return body.result;
 }
 
-export function Planner({ sampleQuestion, data }: { sampleQuestion: string; data: "live" | "sample" }) {
-  const [question, setQuestion] = useState(sampleQuestion);
+export function Planner({ initial, data }: { initial: string; data: "live" | "sample" }) {
+  const [question, setQuestion] = useState(initial);
   const [agent, setAgent] = useState<Side>(idle);
   const [direct, setDirect] = useState<Side>(idle);
   const parsed = useMemo(() => parseTrip(question), [question]);
 
   const run = useCallback((q: string) => {
+    // Keep the trip in the address bar, so a plan can be shared or reloaded.
+    window.history.replaceState(null, "", shareUrl(window.location.origin, q));
     for (const [path, set] of [["agent", setAgent], ["direct", setDirect]] as const) {
       set((s) => ({ ...s, loading: true, error: null }));
       ask(path, q)
@@ -34,8 +38,8 @@ export function Planner({ sampleQuestion, data }: { sampleQuestion: string; data
     }
   }, []);
 
-  // Show the product working on arrival: run the sample trip once.
-  useEffect(() => run(sampleQuestion), [run, sampleQuestion]);
+  // Show the product working on arrival: run the starting trip once.
+  useEffect(() => run(initial), [run, initial]);
 
   const route = direct.result?.route ?? agent.result?.route ?? null;
   const both = agent.result && direct.result && !agent.result.error && !direct.result.error ? compare(agent.result, direct.result) : null;
@@ -83,9 +87,31 @@ export function Planner({ sampleQuestion, data }: { sampleQuestion: string; data
         )}
       </p>
 
+      {data === "live" ? (
+        <div className="-mt-3 flex flex-wrap items-center gap-2 px-1 text-sm" role="group" aria-label="Example trips">
+          <span className="text-mute">Try</span>
+          {EXAMPLES.map((ex) => (
+            <button
+              key={ex.label}
+              type="button"
+              disabled={busy}
+              aria-pressed={question === ex.question}
+              onClick={() => {
+                setQuestion(ex.question);
+                run(ex.question);
+              }}
+              className="rounded-full border border-line bg-card px-3 py-1 cursor-pointer hover:border-ink/30 aria-pressed:border-ink/50 aria-pressed:text-ink text-mute disabled:opacity-50 disabled:cursor-default transition-colors"
+            >
+              {ex.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       {route ? (
         <figure className="rounded-2xl border border-line bg-card px-3 pt-3 pb-2">
-          <RouteMap route={route} direct={direct.result?.stops ?? []} agent={agent.result?.stops ?? []} />
+          <div className="hidden sm:block"><RouteMap route={route} direct={direct.result?.stops ?? []} agent={agent.result?.stops ?? []} /></div>
+          <div className="sm:hidden"><RouteMap compact route={route} direct={direct.result?.stops ?? []} agent={agent.result?.stops ?? []} /></div>
           <figcaption className="flex flex-wrap gap-x-5 gap-y-1 px-2 pb-1 text-xs text-mute">
             <span className="flex items-center gap-1.5"><span className="inline-block size-2 rounded-full bg-direct" aria-hidden />Direct picks</span>
             <span className="flex items-center gap-1.5"><span className="inline-block size-2.5 rounded-full border-2 border-agent" aria-hidden />Agent picks</span>

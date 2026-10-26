@@ -18,6 +18,13 @@ describe("parseTrip", () => {
     expect(r.ok && r.trip).toMatchObject({ from: "Austin, TX", to: "Dallas, TX", categories: ["coffee", "food"], everyMinutes: 120 });
   });
 
+  it("keeps abbreviations like St. and Ft. inside a place name", () => {
+    const r = parseTrip("Chicago, IL to St. Louis, MO. Food and a rest stop every 90 minutes?");
+    expect(r.ok && r.trip).toMatchObject({ from: "Chicago, IL", to: "St. Louis, MO", categories: ["food", "rest"], everyMinutes: 90 });
+    const f = parseTrip("Ft. Collins, CO to Mt. Rushmore. Coffee?");
+    expect(f.ok && f.trip).toMatchObject({ from: "Ft. Collins, CO", to: "Mt. Rushmore" });
+  });
+
   it("asks for both ends when it cannot find them", () => {
     const r = parseTrip("where should I get coffee?");
     expect(r.ok).toBe(false);

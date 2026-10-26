@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Planner } from "@/components/planner";
-import { SAMPLE_QUESTION } from "@/lib/sample";
+import { initialQuestion } from "@/lib/examples";
 import { status } from "@/lib/run";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default async function Home({ searchParams }: PageProps<"/">) {
   const s = status();
+  const q = initialQuestion((await searchParams).q);
   return (
     <main className="mx-auto w-full max-w-6xl px-5 sm:px-8 py-10 sm:py-14">
       <header className="flex flex-wrap items-end justify-between gap-4 mb-8">
@@ -25,7 +26,7 @@ export default function Home() {
         </nav>
       </header>
 
-      <Planner sampleQuestion={SAMPLE_QUESTION} data={s.data} />
+      <Planner initial={q} data={s.data} />
 
       <footer className="mt-14 border-t border-line pt-6 text-xs text-mute space-y-1.5 max-w-3xl">
         {s.data === "sample" ? (

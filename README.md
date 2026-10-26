@@ -26,6 +26,13 @@ Demo: **[places-along.vercel.app](https://places-along.vercel.app)**, on live Ge
 
 What the live run found, and what was fixed, is in [FEEDBACK.md](FEEDBACK.md) and [LESSONS.md](LESSONS.md).
 
+### Using the demo
+
+- **Example trips.** On live data, a row of example trips sits under the question box (Seattle to Portland, San Francisco to Los Angeles, Chicago to St. Louis, and the Lawrence to Denver sample). One tap runs both paths.
+- **Shareable links.** Every run puts the question in the address bar as `?q=`, so a link like [`/?q=Seattle, WA to Portland, OR. Coffee every hour?`](https://places-along.vercel.app/?q=Seattle%2C%20WA%20to%20Portland%2C%20OR.%20Coffee%20every%20hour%3F) opens on that trip.
+- **Go from plan to drive.** Each stop's name opens the place on OpenStreetMap, and each column ends with **Open this plan in Google Maps**, a driving route through its picks in order (Google Maps takes up to nine stops; the page says if any are left out).
+- **Phones.** On narrow screens the map is drawn at a larger scale so the route, stop numbers, and labels stay readable.
+
 ### Protecting the free quota
 
 Geoapify's free plan allows 3,000 requests a day. Every Geoapify call stays on the server (Next.js route handlers); the key never reaches the browser and is not in this repo. On top of that, the public demo:
@@ -111,8 +118,9 @@ Any Node host works. On Vercel: import the repo, set `GEOAPIFY_API_KEY` (and opt
 
 ## Tested
 
-- Automated: `pnpm test` (40 tests: parser, geometry, planner, both paths end to end in sample mode, the live-shape fixes, usage counters with their memory fallback, house style), plus typecheck, lint, and build. One more test runs only with `USAGE_TEST_DATABASE_URL` set: 8 concurrent runs against a real Postgres database with a limit of 3 get exactly 3 through (run against the demo's Neon database on Oct 26, 2026, on a far-future day it then deletes).
+- Automated: `pnpm test` (54 tests: parser, geometry, planner, both paths end to end in sample mode, the live-shape fixes, usage counters with their memory fallback, example trips and share links, map links, house style), plus typecheck, lint, and build. One more test runs only with `USAGE_TEST_DATABASE_URL` set: 8 concurrent runs against a real Postgres database with a limit of 3 get exactly 3 through (run against the demo's Neon database on Oct 26, 2026, on a far-future day it then deletes).
 - Live, Oct 22, 2026, on the hosted demo with the program key: Lawrence, KS to Denver, CO (coffee and EV charging); Portland, OR to Boise, ID (coffee and food); Chicago, IL to Nashville, TN (food and rest). Both paths returned stops on every trip with no failed calls.
+- Live, Oct 26, 2026, on the hosted demo: the four example trips, including Chicago, IL to St. Louis, MO, which first failed because the parser read "St. Louis" as "St" (fixed, with a test for St., Ft., and Mt.).
 - `pnpm smoke` and `pnpm transcript` against the live API and MCP server (output in [docs/transcripts/](docs/transcripts/)).
 - The Geoapify MCP server in MCP Inspector 2.12.0 and in OpenCode 1.19.4 with local Ollama models (qwen3:4b, qwen2.5:3b), Oct 22, 2026. Screenshots in the tutorial, transcripts in [docs/transcripts/](docs/transcripts/).
 
@@ -123,7 +131,7 @@ Any Node host works. On Vercel: import the repo, set `GEOAPIFY_API_KEY` (and opt
 - **The daily budget is a soft cap.** It is checked before a run and counted after it, so runs that start at the same moment can go a few requests over. With a 1,000 budget against the free plan's 3,000, that margin is safe. If the database is unreachable, each server instance counts on its own until it is back.
 - **Driving only, one question shape.** The parser reads "A to B" plus the kinds of stop and "every N hours" or minutes. Other phrasings get a hint instead of an answer.
 - **"Rest" means public toilets and picnic sites.** Geoapify has no highway rest area category (see FEEDBACK.md).
-- **The map is a schematic line**, not a tile map: enough to place the stops along the drive, not to navigate.
+- **The map is a schematic line**, not a tile map: enough to place the stops along the drive, not to navigate. For that, use the OpenStreetMap and Google Maps links.
 - **Cursor and Claude Code were not run for the tutorial.** Their config follows Geoapify's guide. The tested clients are MCP Inspector and OpenCode with a local model, plus the official MCP client and curl. The small local models were slow on a CPU and sometimes miscopied coordinates, and the full trip prompt was not run in OpenCode.
 
 ## Also in this repo

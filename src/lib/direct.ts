@@ -43,7 +43,7 @@ export async function runDirect(trip: Trip, opts: { apiKey: string | null; fetch
 
   try {
     const [from, to] = await Promise.all([geo.geocode(trip.from), geo.geocode(trip.to)]);
-    if (!from || !to) throw new Error(`Couldn't find ${!from ? trip.from : trip.to}.${opts.apiKey ? "" : " Sample mode knows only Lawrence, KS and Denver, CO."}`);
+    if (!from || !to) throw new Error(`Couldn't find ${!from ? trip.from : trip.to}.${opts.apiKey ? " Try a city with its state or country, like \"Denver, CO\"." : " Sample mode knows only Lawrence, KS and Denver, CO."}`);
 
     const r = await geo.route(from.at, to.at);
     const route: Route = { from: { label: trip.from, at: from.at }, to: { label: trip.to, at: to.at }, ...r };

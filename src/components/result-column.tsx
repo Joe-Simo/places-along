@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatDistance, formatDuration } from "@/lib/geo";
+import { placeUrl, tripUrl } from "@/lib/links";
 import type { RunResult, TraceEntry } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 
@@ -33,26 +34,29 @@ export function ResultColumn({ which, result, loading, error }: { which: "agent"
 
       {result && !result.error ? (
         result.stops.length ? (
-          <ol className="mt-4 space-y-4">
-            {result.stops.map((s) => (
-              <li key={s.n}>
-                <p className="text-xs uppercase tracking-wide text-mute">Stop {s.n} <span className="normal-case tracking-normal">around {formatDuration(s.targetMinutes)}</span></p>
-                <ul className="mt-1.5 space-y-1.5">
-                  {s.picks.map((p) => (
-                    <li key={p.place.id} className="text-sm leading-snug">
-                      <span className="text-mute">{CATEGORIES[p.category].label}: </span>
-                      <span className="font-medium">{p.place.name}</span>
-                      <span className="text-mute">, {shortAddress(p.place.name, p.place.address)}</span>
-                      <span className="block text-xs text-mute">at {formatDuration(p.etaMinutes)}, {p.offRouteM < 160 ? "on the route" : `${formatDistance(p.offRouteM)} off the route`}</span>
-                    </li>
-                  ))}
-                  {s.missing.map((c) => (
-                    <li key={c} className="text-sm text-mute">No {CATEGORIES[c].noun} found close to the road here.</li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ol>
+          <>
+            <ol className="mt-4 space-y-4">
+              {result.stops.map((s) => (
+                <li key={s.n}>
+                  <p className="text-xs uppercase tracking-wide text-mute">Stop {s.n} <span className="normal-case tracking-normal">around {formatDuration(s.targetMinutes)}</span></p>
+                  <ul className="mt-1.5 space-y-1.5">
+                    {s.picks.map((p) => (
+                      <li key={p.place.id} className="text-sm leading-snug">
+                        <span className="text-mute">{CATEGORIES[p.category].label}: </span>
+                        <a className="font-medium hover:underline underline-offset-2" href={placeUrl(p.place.at)} target="_blank" rel="noopener noreferrer" title="Open on OpenStreetMap">{p.place.name}</a>
+                        <span className="text-mute">, {shortAddress(p.place.name, p.place.address)}</span>
+                        <span className="block text-xs text-mute">at {formatDuration(p.etaMinutes)}, {p.offRouteM < 160 ? "on the route" : `${formatDistance(p.offRouteM)} off the route`}</span>
+                      </li>
+                    ))}
+                    {s.missing.map((c) => (
+                      <li key={c} className="text-sm text-mute">No {CATEGORIES[c].noun} found close to the road here.</li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ol>
+            <TripLink result={result} />
+          </>
         ) : (
           <p className="mt-4 text-sm text-mute">No stops: the drive is shorter than the interval you asked for.</p>
         )
@@ -64,6 +68,19 @@ export function ResultColumn({ which, result, loading, error }: { which: "agent"
 
       {result?.trace.length ? <Trace entries={result.trace} /> : null}
     </section>
+  );
+}
+
+function TripLink({ result }: { result: RunResult }) {
+  const t = result.route ? tripUrl(result.route, result.stops) : null;
+  if (!t) return null;
+  return (
+    <p className="mt-5 text-sm">
+      <a href={t.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 font-medium hover:border-ink/30 transition-colors">
+        Open this plan in Google Maps <span aria-hidden>&#8599;</span>
+      </a>
+      {t.dropped ? <span className="block mt-1.5 text-xs text-mute">Google Maps takes nine stops, so the last {t.dropped} {t.dropped === 1 ? "is" : "are"} left out.</span> : null}
+    </p>
   );
 }
 
