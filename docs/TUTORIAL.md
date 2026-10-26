@@ -317,7 +317,7 @@ pnpm exec openapi-typescript openapi/routing.json -o src/lib/geoapify/generated/
 
 `--default-non-nullable=false` keeps request fields that have a default (like `limit`) optional, which is what the spec means. [`scripts/gen-client.mjs`](https://github.com/Joe-Simo/places-along/blob/main/scripts/gen-client.mjs) runs it for every spec.
 
-The whole direct path is four kinds of request ([`geoapify/client.ts`](https://github.com/Joe-Simo/places-along/blob/main/src/lib/geoapify/client.ts)):
+The whole direct path is three kinds of request ([`geoapify/client.ts`](https://github.com/Joe-Simo/places-along/blob/main/src/lib/geoapify/client.ts)):
 
 1. `GET /v1/geocode/search` for each end of the trip.
 2. `GET /v1/routing` once.
@@ -374,6 +374,26 @@ These screenshots are from the hosted demo on live data. Every call either path 
 
 ![The direct path's trace: 6 HTTP calls](../public/screenshots/live-direct-trace.png)
 
+## Going public: protect your key and the free plan
+
+A public demo on a free key needs three guards. Places Along uses all of them.
+
+1. **Keep the key on the server.** Every Geoapify call, MCP or REST, runs in a Next.js route handler. The browser only ever talks to `/api/plan`, so the key never reaches it.
+2. **Count what you actually spend.** A run is not one request: the sample trip costs 12 MCP tool calls on the agent path and 6 HTTP calls on the direct path. The app counts the Geoapify calls in each run's trace and stops live runs at a daily budget (1,000 by default, against the free plan's 3,000), plus 12 live runs per visitor a day. Repeated questions come from a one-hour cache and cost nothing.
+3. **Keep the counters somewhere every instance can see.** Serverless platforms start and stop instances freely, so counters in memory reset without warning, and two instances each count only their own traffic. Places Along keeps them in one small Postgres table (on the hosted demo, a free [Neon](https://neon.com/) database added from the Vercel Marketplace). Geoapify's review of the first version suggested this change.
+
+The per-visitor limit is a single atomic statement, so two runs that arrive together cannot both slip past it ([`src/lib/usage.ts`](https://github.com/Joe-Simo/places-along/blob/main/src/lib/usage.ts)):
+
+```sql
+INSERT INTO demo_usage (day, key, n) VALUES ($1, $2, 1)
+ON CONFLICT (day, key) DO UPDATE SET n = demo_usage.n + 1 WHERE demo_usage.n < $3
+RETURNING n
+```
+
+If a row comes back, the run may go ahead; if none does, the visitor is out of runs. The day is the UTC date, and the visitor is a short hash of the IP address, not the address itself.
+
+The database is a guard, not a dependency. Each call has a 2.5 second timeout, and on any error the app counts in memory instead, as it did before, and logs why. A database outage costs some accuracy, never the demo.
+
 ## Run it yourself
 
 ```bash
@@ -395,6 +415,8 @@ pnpm dev
 
 Checks: `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`.
 
+To share the demo's daily counters across server instances, set `DATABASE_URL` to a Postgres database (see [Going public](#going-public-protect-your-key-and-the-free-plan)). Without it, they are kept in memory.
+
 ## Troubleshooting
 
 | Symptom | What to check |
@@ -406,6 +428,7 @@ Checks: `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`.
 | `geometry.type must be one of LineString` | `measure_geometry` `along` needs a `LineString`; `calculate_route` returns a `MultiLineString`. Flatten it first. |
 | `Structured content does not match the tool's output schema` | Your client validates results against `outputSchema`, and the result broke it (seen on EV charging searches). The data did arrive; see Part A. |
 | The agent names a place that is not in the trace | Places Along drops it and lists it under the result. Ask the model to cite `place_id`s. |
+| "Today's live demo allowance is used up" | The daily request budget or your per-visitor runs are spent. Run it locally with your own key, or raise `PLACES_ALONG_DAILY_GEOAPIFY_REQUESTS` and `PLACES_ALONG_VISITOR_RUNS_PER_DAY`. |
 
 ## Further reading
 

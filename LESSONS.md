@@ -35,6 +35,10 @@ The program key arrived by email. The agent ran `pnpm smoke`, read the report, a
 - **The demo needed a real budget, not a run count.** The daily cap now counts the Geoapify requests the app actually makes (1,000 a day by default, against the free plan's 3,000), plus 12 live runs per visitor a day and a one-hour cache.
 - **The hosted agent stays scripted.** Free OpenRouter models took 45 to 70 seconds per run and sometimes timed out, and their daily quota is shared with other projects, so the public demo uses the scripted driver and says so. The model driver works locally.
 
+## Review (Oct 26, 2026): shared counters
+
+Geoapify approved the project and suggested, as optional, that the demo's daily counters move out of memory, since each new Vercel instance started them at zero. The agent added a free Neon Postgres database through the Vercel Marketplace and moved the counters there, with an atomic per-visitor check and a fallback to memory if the database is slow or down. Tests cover both stores and the fallback, and one test ran against the real database: 8 concurrent runs with a limit of 3 let exactly 3 through.
+
 ## What was decided without a person, and what still could use one
 
 - **Cursor and Claude Code were not run.** Neither is available on the machine the agent works from, and the agent has no accounts for them. The tutorial says this plainly, keeps the setup steps from Geoapify's guide, and shows real transcripts from the official MCP client and curl instead. Nothing in it claims a Cursor or Claude Code result.
